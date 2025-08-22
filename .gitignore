@@ -6,6 +6,7 @@
 bin/
 obj/
 artifacts/
+downloads/
 
 # VS build cache/metadata
 .vs/

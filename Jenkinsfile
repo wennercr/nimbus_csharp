@@ -54,8 +54,12 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE'){
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
+                        def filterArg = (env.USER_GROUPS?.trim())
+                            ? '--filter "TestCategory=' + env.USER_GROUPS + '"'
+                            : ''
+
                         def cmd = """
                             dotnet test \
                             --configuration Release \
@@ -67,15 +71,28 @@ pipeline {
                             -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \
                             -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \
                             -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \
-                            --filter "TestCategory=${env.USER_GROUPS}"
+                            ${filterArg}
                         """.stripIndent().trim()
 
                         echo "Final command: ${cmd}"
-                        sh cmd
+
+                        sh """
+                        set -e
+                        # point Allure .NET to workspace root (let the shell expand $WORKSPACE)
+                        export ALLURE_RESULTS_DIRECTORY="$WORKSPACE/allure-results"
+                        rm -rf "$ALLURE_RESULTS_DIRECTORY" || true
+                        mkdir -p "$ALLURE_RESULTS_DIRECTORY"
+
+                        ${cmd}
+
+                        echo "Allure results directory: $ALLURE_RESULTS_DIRECTORY"
+                        ls -la "$ALLURE_RESULTS_DIRECTORY" || true
+                        """
                     }
                 }
             }
         }
+
 
         stage('Generate Allure Report') {
             steps {

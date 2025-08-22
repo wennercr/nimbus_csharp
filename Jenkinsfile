@@ -57,10 +57,6 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
-                        def filterArg = (env.USER_GROUPS?.trim())
-                            ? "--filter \"TestCategory=${env.USER_GROUPS}\""
-                            : ""
-
                         def cmd = """
                             dotnet test \
                             --configuration Release \
@@ -72,34 +68,11 @@ pipeline {
                             -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \
                             -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \
                             -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \
-                            ${filterArg}
+                            --filter "TestCategory=${env.USER_GROUPS}"
                         """.stripIndent().trim()
 
                         echo "Final command: ${cmd}"
-
-                        sh """
-                        set -e
-
-                        # run tests (they will write to **/bin/.../target/allure-results per allureConfig.json + bootstrapper)
-                        ${cmd}
-
-                        # collect all allure-results into a central dir for Jenkins plugin
-                        CENTRAL_DIR="${WORKSPACE}/allure-results"
-                        rm -rf "$CENTRAL_DIR" || true
-                        mkdir -p "$CENTRAL_DIR"
-
-                        echo "Scanning for produced allure-results..."
-                        FOUND_DIRS=\$(find "$WORKSPACE" -type d -path "*/target/allure-results" | sort -u)
-                        echo "\$FOUND_DIRS" | sed '/^\\s*\$/d' || true
-
-                        for d in \$FOUND_DIRS; do
-                            echo "Sync: \$d -> \$CENTRAL_DIR"
-                            cp -R "\$d/." "\$CENTRAL_DIR/" || true
-                        done
-
-                        echo "Centralized Allure results in: \$CENTRAL_DIR"
-                        ls -la "\$CENTRAL_DIR" || true
-                        """
+                        sh cmd
                     }
                 }
             }
@@ -111,7 +84,7 @@ pipeline {
                 allure([
                     includeProperties: false,
                     jdk: '',
-                    results: [[path: "${WORKSPACE}/allure-results"]],
+                    results: [[path: "**/target/allure-results"]],
                     reportBuildPolicy: 'ALWAYS'
                 ])
             }

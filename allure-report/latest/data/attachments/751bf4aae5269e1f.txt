@@ -1,0 +1,2 @@
+Remote Grid URL being used: http://localhost:4444
+Test passed: FetchUserListShouldReturnData

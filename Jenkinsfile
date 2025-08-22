@@ -61,11 +61,11 @@ pipeline {
                         --no-build \
                         --logger "trx;LogFileName=test_results.trx" \
                         -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \
-                        -- "TestRunParameters.Parameter(name=testSuiteName,value=${env.USER_SUITE_NAME})" \
-                        -- "TestRunParameters.Parameter(name=browser,value=${env.USER_BROWSER})" \
-                        -- "TestRunParameters.Parameter(name=headless,value=${env.USER_HEADLESS})" \
-                        -- "TestRunParameters.Parameter(name=remote,value=${env.REMOTE})" \
-                        -- "TestRunParameters.Parameter(name=gridUrl,value=${env.GRID_URL})" \
+                        -- "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \
+                        -- "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \
+                        -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \
+                        -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \
+                        -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \
                         --filter "TestCategory=${env.USER_GROUPS}"
                     """.stripIndent().trim()
 

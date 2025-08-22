@@ -248,7 +248,6 @@ namespace Nimbus.Framework.Core
         private void AddRemoteCapabilities(DriverOptions options)
         {
             options.AddAdditionalOption("se:name", testSuiteName);
-            options.AddAdditionalOption("se:downloadsEnabled", true);
             options.PlatformName = "linux";
 
             // Logging prefs (Chromium)

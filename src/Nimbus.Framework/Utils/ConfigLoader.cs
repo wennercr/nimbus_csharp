@@ -1,4 +1,6 @@
 // File: src/Nimbus.Framework/Config/ConfigLoader.cs
+using System.Collections.ObjectModel;
+using System.Text;
 using NUnit.Framework; // Needed for TestContext.Parameters
 
 namespace Nimbus.Framework.Utils
@@ -108,6 +110,56 @@ namespace Nimbus.Framework.Utils
             {
                 return defaultValue;
             }
+        }
+
+        // Returns all resolved config properties as a sorted, read-only map,
+        // mirroring the Java behavior: file keys only, with runtime overrides.
+        // Also includes 'groups' only if it's not in the file but is provided at runtime.
+        public static IReadOnlyDictionary<string, string> GetAll()
+        {
+            // Sorted result (case-insensitive, like Java TreeMap defaulting to alpha order)
+            var sorted = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // 1) Load all keys from config.properties, resolving each via Get(key)
+            foreach (var kv in _config)
+            {
+                sorted[kv.Key] = Get(kv.Key); // Get() already checks env + TestRunParameters, then file
+            }
+
+            // 2) Only add 'groups' if it's NOT in the file but IS passed at runtime
+            if (!_config.ContainsKey("groups"))
+            {
+                string? runtimeGroups = null;
+
+                // Prefer TestRunParameters (like -D in Java)
+                try
+                {
+                    if (TestContext.Parameters.Exists("groups"))
+                        runtimeGroups = TestContext.Parameters["groups"];
+                }
+                catch { /* not in NUnit context */ }
+
+                // Fallback to env var if present
+                runtimeGroups ??= Environment.GetEnvironmentVariable("groups");
+
+                if (!string.IsNullOrWhiteSpace(runtimeGroups))
+                {
+                    sorted["groups"] = runtimeGroups!;
+                }
+            }
+
+            return new ReadOnlyDictionary<string, string>(sorted);
+        }
+
+        // Returns the map as a multi-line "key = value" string (same as Java)
+        public static string GetAllAsString()
+        {
+            var sb = new StringBuilder();
+            foreach (var kv in GetAll())
+            {
+                sb.Append(kv.Key).Append(" = ").Append(kv.Value).Append('\n');
+            }
+            return sb.ToString();
         }
     }
 }

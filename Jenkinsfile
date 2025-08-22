@@ -55,24 +55,19 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Start with the base dotnet test command
                     def cmd = """
                         dotnet test \
-                          --configuration Release \
-                          --no-build \
-                          --logger "trx;LogFileName=test_results.trx" \
-                          -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \
-                          -- TestRunParameters.Parameter(name=testSuiteName,value=${env.USER_SUITE_NAME}) \
-                          -- TestRunParameters.Parameter(name=browser,value=${env.USER_BROWSER}) \
-                          -- TestRunParameters.Parameter(name=headless,value=${env.USER_HEADLESS}) \
-                          -- TestRunParameters.Parameter(name=remote,value=${env.REMOTE}) \
-                          -- TestRunParameters.Parameter(name=gridUrl,value=${env.GRID_URL})
+                        --configuration Release \
+                        --no-build \
+                        --logger "trx;LogFileName=test_results.trx" \
+                        -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \
+                        -- "TestRunParameters.Parameter(name=testSuiteName,value=${env.USER_SUITE_NAME})" \
+                        -- "TestRunParameters.Parameter(name=browser,value=${env.USER_BROWSER})" \
+                        -- "TestRunParameters.Parameter(name=headless,value=${env.USER_HEADLESS})" \
+                        -- "TestRunParameters.Parameter(name=remote,value=${env.REMOTE})" \
+                        -- "TestRunParameters.Parameter(name=gridUrl,value=${env.GRID_URL})" \
+                        --filter "TestCategory=${env.USER_GROUPS}"
                     """.stripIndent().trim()
-
-                    // Add groups if provided
-                    if (env.USER_GROUPS?.trim()) {
-                        cmd += " -- TestRunParameters.Parameter(name=groups,value=${env.USER_GROUPS})"
-                    }
 
                     echo "Final command: ${cmd}"
                     sh cmd

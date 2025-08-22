@@ -13,6 +13,21 @@ pipeline {
             }
         }
 
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-ssh',
+                    url: 'git@github.com:wennercr/nimbus_csharp.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'dotnet restore'
+                sh 'dotnet build --configuration Release --no-restore'
+            }
+        }
+
         stage('Set Selenium Properties') {
             steps {
                 script {
@@ -35,22 +50,7 @@ pipeline {
                     env.USER_THREADS    = userInput['Threads']
                 }
             }
-        }
-
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    credentialsId: 'github-ssh',
-                    url: 'git@github.com:wennercr/nimbus.git'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh 'dotnet restore'
-                sh 'dotnet build --configuration Release --no-restore'
-            }
-        }
+        }    
 
         stage('Run Tests') {
             steps {

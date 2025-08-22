@@ -1,0 +1,178 @@
+name: Run Tests and Publish Allure Report (.NET)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      suite_name:
+        description: 'Test suite name'
+        required: true
+        default: 'SampleSmoke'
+      browser:
+        description: 'Browser to use'
+        required: true
+        default: 'chrome'
+      headless:
+        description: 'Run in headless mode?'
+        required: true
+        default: 'true'
+      groups:
+        description: 'Comma-separated test groups (optional)'
+        required: false
+        default: ''
+      threads:
+        description: '# of parallel threads'
+        required: true
+        default: '3'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gha-tests-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      SUITE_NAME: ${{ github.event.inputs.suite_name || 'SampleSmoke' }}
+      BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
+      HEADLESS: ${{ github.event.inputs.headless || 'true' }}
+      GROUPS: ${{ github.event.inputs.groups || 'smoke' }}
+      THREADS: ${{ github.event.inputs.threads || '1' }}
+      GRID_URL: "http://localhost:4444"
+      ALLURE_RESULTS_DIR: target/allure-results
+      ALLURE_REPORT_DIR: target/allure-report
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Prepare Allure directories
+        run: |
+          rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
+          mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
+
+      - name: Start Selenium Grid
+        run: |
+          docker run -d -p 4444:4444 --name selenium-grid selenium/standalone-chrome:latest
+          sleep 10
+
+      - name: Install Allure CLI (Latest)
+        run: |
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "Latest Allure version: $LATEST_VERSION"
+
+          wget "https://github.com/allure-framework/allure2/releases/download/$LATEST_VERSION/allure-$LATEST_VERSION.zip" -O allure.zip
+          unzip allure.zip -d allure-cli
+          sudo mv "allure-cli/allure-$LATEST_VERSION" /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+
+          allure --version
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: |
+          dotnet test \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test_results.trx" \
+            -- NUnit.NumberOfTestWorkers=${THREADS} \
+            -- "TestRunParameters.Parameter(name=\"testSuiteName\", value=\"${SUITE_NAME}\")" \
+            -- "TestRunParameters.Parameter(name=\"browser\", value=\"${BROWSER}\")" \
+            -- "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
+            -- "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
+            -- "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
+            --filter "TestCategory=${GROUPS}"
+        continue-on-error: true
+
+      - name: Generate Allure report
+        if: always()
+        run: |
+          set -euo pipefail
+          RUN_ID="${{ github.run_id }}"
+          RESULTS="${ALLURE_RESULTS_DIR}"
+          REPORT_ROOT="${ALLURE_REPORT_DIR}"
+          VERSIONED_DIR="${REPORT_ROOT}/${RUN_ID}"
+          LATEST_DIR="${REPORT_ROOT}/latest"
+
+          allure generate "${RESULTS}" -o "${VERSIONED_DIR}" --clean
+
+          rm -rf "${LATEST_DIR}"
+          mkdir -p "${REPORT_ROOT}"
+          cp -r "${VERSIONED_DIR}" "${LATEST_DIR}"
+
+          if [ -f "${LATEST_DIR}/index.html" ]; then
+            sed -i "s#app.js#app.js?v=${RUN_ID}#g" "${LATEST_DIR}/index.html"
+            sed -i "s#styles.css#styles.css?v=${RUN_ID}#g" "${LATEST_DIR}/index.html"
+            sed -i "1i <meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\"/>" "${LATEST_DIR}/index.html"
+          fi
+
+          cat > "${REPORT_ROOT}/index.html" <<HTML
+          <!doctype html><meta charset="utf-8">
+          <meta http-equiv="refresh" content="0; url=./latest/?t=${RUN_ID}">
+          <title>Allure Report</title>
+          <a href="./latest/?t=${RUN_ID}">Go to latest report</a>
+          HTML
+
+          touch "${REPORT_ROOT}/.nojekyll"
+
+          echo "Publish dir contents (2 levels):"
+          find "${REPORT_ROOT}" -maxdepth 2 -print | sort
+
+      - name: Upload Allure report as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: ${{ env.ALLURE_REPORT_DIR }}
+
+      - name: Deploy Allure report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ${{ env.ALLURE_REPORT_DIR }}
+          destination_dir: allure-report
+          keep_files: true
+          force_orphan: false
+          enable_jekyll: false
+
+      - name: Post report links
+        if: always()
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          REPO="${GITHUB_REPOSITORY##*/}"
+          BASE_URL="https://${OWNER}.github.io/${REPO}"
+
+          {
+            echo "### Allure Report"
+            echo ""
+            echo "- 🔗 **This run (instant):** ${BASE_URL}/allure-report/${RUN_ID}/"
+            echo "- 🔁 **Latest (may take a few minutes):** ${BASE_URL}/allure-report/latest/"
+          } >> "$GITHUB_STEP_SUMMARY"

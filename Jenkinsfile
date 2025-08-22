@@ -4,6 +4,7 @@ pipeline {
     environment {
         GRID_URL = 'http://selenium-hub:4444'
         REMOTE   = 'true' // Always use Selenium Grid
+        ALLURE_RESULTS_DIR = "${WORKSPACE}/allure-results"
     }
 
     stages {
@@ -57,36 +58,34 @@ pipeline {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
                         def filterArg = (env.USER_GROUPS?.trim())
-                            ? '--filter "TestCategory=' + env.USER_GROUPS + '"'
-                            : ''
+                            ? "--filter \"TestCategory=${env.USER_GROUPS}\""
+                            : ""
 
                         def cmd = """
                             dotnet test \
-                            --configuration Release \
-                            --no-build \
-                            --logger "trx;LogFileName=test_results.trx" \
-                            -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \
-                            -- "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \
-                            ${filterArg}
+                              --configuration Release \
+                              --no-build \
+                              --logger "trx;LogFileName=test_results.trx" \
+                              -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \
+                              -- "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \
+                              -- "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \
+                              -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \
+                              -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \
+                              -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \
+                              ${filterArg}
                         """.stripIndent().trim()
 
                         echo "Final command: ${cmd}"
 
                         sh """
-                        set -e
-                        # point Allure .NET to workspace root (let the shell expand $WORKSPACE)
-                        export ALLURE_RESULTS_DIRECTORY="$WORKSPACE/allure-results"
-                        rm -rf "$ALLURE_RESULTS_DIRECTORY" || true
-                        mkdir -p "$ALLURE_RESULTS_DIRECTORY"
+                          set -e
+                          rm -rf "${ALLURE_RESULTS_DIR}" || true
+                          mkdir -p "${ALLURE_RESULTS_DIR}"
 
-                        ${cmd}
+                          ${cmd}
 
-                        echo "Allure results directory: $ALLURE_RESULTS_DIRECTORY"
-                        ls -la "$ALLURE_RESULTS_DIRECTORY" || true
+                          echo "Allure results directory: ${ALLURE_RESULTS_DIR}"
+                          ls -la "${ALLURE_RESULTS_DIR}" || true
                         """
                     }
                 }
@@ -96,12 +95,10 @@ pipeline {
 
         stage('Generate Allure Report') {
             steps {
-                allure([
-                    includeProperties: false,
-                    jdk: '',
-                    results: [[path: 'allure-results']],
-                    reportBuildPolicy: 'ALWAYS'
-                ])
+                sh """
+                  echo "Generating Allure report from ${ALLURE_RESULTS_DIR}"
+                  allure generate -c -o "${WORKSPACE}/allure-report" "${ALLURE_RESULTS_DIR}"
+                """
             }
         }
     }

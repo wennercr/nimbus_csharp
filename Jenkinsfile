@@ -92,14 +92,16 @@ pipeline {
             }
         }
 
-
         stage('Generate Allure Report') {
             steps {
-                sh """
-                  echo "Generating Allure report from ${ALLURE_RESULTS_DIR}"
-                  allure generate -c -o "${WORKSPACE}/allure-report" "${ALLURE_RESULTS_DIR}"
-                """
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: "${ALLURE_RESULTS_DIR}"]],
+                    reportBuildPolicy: 'ALWAYS'
+                ])
             }
         }
+
     }
 }

@@ -249,10 +249,6 @@ namespace Nimbus.Framework.Core
         {
             options.AddAdditionalOption("se:name", testSuiteName);
             options.PlatformName = "linux";
-
-            // Logging prefs (Chromium)
-            var loggingPrefs = new Dictionary<string, object> { ["browser"] = "ALL" };
-            options.AddAdditionalOption("goog:loggingPrefs", loggingPrefs);
         }
 
         /// <summary>

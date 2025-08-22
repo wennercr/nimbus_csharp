@@ -1,0 +1,6 @@
+{
+  "allure": {
+    "directory": "target/allure-results",
+    "title": "Nimbus .NET tests"
+  }
+}

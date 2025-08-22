@@ -1,0 +1,87 @@
+services:
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - /c/jenkins_home:/var/jenkins_home
+    networks:
+      - grid-network
+
+  selenium-hub:
+    image: selenium/hub:4.34.0
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+      - "4442:4442"
+      - "4443:4443"
+    environment:
+      - SE_SESSION_REQUEST_TIMEOUT=60
+      - SE_SESSION_RETRY_INTERVAL=5
+    networks:
+      - grid-network
+
+  chrome-1:
+    image: selenium/node-chrome:4.34.0
+    volumes:
+      - ./downloads:/home/seluser/Downloads
+    container_name: nimbus-core-chrome-1
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=120
+      - SE_VNC_NO_PASSWORD=1
+      - SE_NODE_ENABLE_MANAGED_DOWNLOADS=true
+    shm_size: 2gb
+    networks:
+      - grid-network
+
+  chrome-2:
+    image: selenium/node-chrome:4.34.0
+    volumes:
+      - ./downloads:/home/seluser/Downloads
+    container_name: nimbus-core-chrome-2
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=120
+      - SE_VNC_NO_PASSWORD=1
+      - SE_NODE_ENABLE_MANAGED_DOWNLOADS=true
+    shm_size: 2gb
+    networks:
+      - grid-network
+
+  chrome-3:
+    image: selenium/node-chrome:4.34.0
+    volumes:
+      - ./downloads:/home/seluser/Downloads
+    container_name: nimbus-core-chrome-3
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=120
+      - SE_VNC_NO_PASSWORD=1
+      - SE_NODE_ENABLE_MANAGED_DOWNLOADS=true
+    shm_size: 2gb
+    networks:
+      - grid-network
+
+networks:
+  grid-network:

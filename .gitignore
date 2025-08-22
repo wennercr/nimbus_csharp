@@ -1,0 +1,161 @@
+## === Nimbus C# .gitignore (C# / .NET 8/9, VS, Rider, NUnit, Allure) ===
+
+# ------------------------------
+# Build outputs
+# ------------------------------
+bin/
+obj/
+artifacts/
+
+# VS build cache/metadata
+.vs/
+
+# JetBrains Rider / IntelliJ
+.idea/
+*.sln.iml
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.rsuser
+
+# Logs & temp
+*.log
+logs/
+*.tlog
+*.tmp
+*.temp
+~$*
+*.bak
+*.orig
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
+
+# ------------------------------
+# .NET / NuGet
+# ------------------------------
+# Old-style packages folder (PackageReference uses obj/ instead)
+packages/
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# NuGet v3 cache/store
+~/.nuget/
+.nuget/
+
+# Ngen files
+*.ni.dll
+*.ni.exe
+
+# Lock files (legacy)
+project.lock.json
+project.fragment.lock.json
+
+# ------------------------------
+# Coverage / Benchmarking / Reports
+# ------------------------------
+*.dotCover
+*.dcvr
+coverage/
+.coverage
+.coveragexml
+Coverage.xml
+coverage.cobertura.xml
+coverage.opencover.xml
+lcov.info
+BenchmarkDotNet.Artifacts/
+
+# OpenCover / ReportGenerator outputs
+results.xml
+report/
+reports/
+
+# ------------------------------
+# Test artifacts
+# ------------------------------
+TestResult*/
+TestResults/
+*.trx
+*.testlog
+
+# Allure
+allure-results/
+allure-report/
+**/allure-results/
+**/allure-report/
+
+# NUnit / xUnit XML (kept in results dirs, but ignore strays)
+TestResult.xml
+test-result.xml
+
+# ------------------------------
+# IDE & tooling
+# ------------------------------
+# Visual Studio Code: ignore workspace-local settings but allow shared configs
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper*/
+*.DotSettings.user
+
+# NCrunch
+*.ncrunch*
+_NCrunch_*/
+.*crunch*.local.xml
+nCrunchTemp_*
+
+# Azure Functions local settings
+local.settings.json
+
+# MSBuild publish profiles (ignore user ones; keep .pubxml if you want)
+*.pubxml.user
+*.publishsettings
+
+# ClickOnce
+publish/
+
+# Windows Store app package dirs
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+
+# SQL Server / EF artifacts
+*.mdf
+*.ldf
+*.ndf
+*.dbmdl
+**/Migrations/*Designer.cs
+**/Migrations/*Snapshot.cs~
+
+# Misc
+*.opendb
+*.cache
+*.pdb
+*.symbols.nupkg
+*.snupkg
+*.nupkg
+
+# Node (if you host SPA bits in the solution)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# UI test screenshots/snapshots
+screenshots/
+ScreenShots/
+Snapshots/

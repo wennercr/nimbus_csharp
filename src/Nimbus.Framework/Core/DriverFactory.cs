@@ -33,7 +33,6 @@ namespace Nimbus.Framework.Core
             this.testSuiteName = ConfigLoader.Get("testSuiteName") ?? "SampleSuite";
             this.gridUrl = ConfigLoader.Get("gridUrl") ?? "http://localhost:4444/";
             this.useDriverExe = bool.TryParse(ConfigLoader.Get("useDriverExe"), out var d) && d;
-            this.driverPath = ConfigLoader.Get("driverPath") ?? "./drivers";
             this.driverPath = ResolveDriversDir();
         }
 

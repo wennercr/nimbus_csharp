@@ -1,31 +1,19 @@
-
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 
 namespace Nimbus.Framework.Utils
 {
     /// <summary>
-    /// Utility class for retrieving files downloaded during test execution.
-    ///
-    /// <para>
-    /// Supports both <b>remote Selenium Grid sessions</b> (using the Managed Downloads API)
-    /// and <b>local WebDriver sessions</b> (by polling the local download directory).
-    /// </para>
-    ///
-    /// <para>For Remote mode this requires:</para>
-    /// <list type="bullet">
-    ///   <item>Selenium Grid 4.x+ started with <c>--enable-managed-downloads</c></item>
-    ///   <item>The <c>se:downloadsEnabled</c> capability set to <c>true</c></item>
-    /// </list>
-    ///
-    /// <para>
-    /// Typical usage:
-    /// <code>
-    /// var helper = new DownloadHelper(driver);
-    /// helper.PrepareDownloadDir();
-    /// FileInfo file = helper.DownloadWhenReady();
-    /// </code>
-    /// </para>
+    /// Generic download helper that supports BOTH Remote (Selenium Grid Managed Downloads)
+    /// and Local runs. It can:
+    ///  - Start with a clean state (local dir + remote managed store)
+    ///  - Poll for a completed file on the server (no ".crdownload" or dotfiles)
+    ///  - Download each server file only once
+    ///  - Verify local file "size stability" before returning (works for any file type)
     /// </summary>
     public class DownloadHelper
     {
@@ -34,20 +22,17 @@ namespace Nimbus.Framework.Utils
         private readonly bool isRemote;
 
         /// <summary>
-        /// Constructs a thread-safe download helper for the current test thread.
-        /// Automatically assigns a unique subdirectory under /downloads to avoid conflicts.
+        /// Constructs a per-thread download directory to avoid collisions.
+        /// Mirrors the Java behavior: remote flag pulled from ConfigLoader for parity.
         /// </summary>
-        /// <param name="driver">The active WebDriver from the current test session</param>
         public DownloadHelper(IWebDriver driver)
         {
-            this.driver = driver;
-            this.isRemote = bool.Parse(ConfigLoader.Get("remote") ?? "true");
+            this.driver = driver ?? throw new ArgumentNullException(nameof(driver));
+            this.isRemote = bool.TryParse(ConfigLoader.Get("remote"), out var r) && r;
 
-            // Create a per-thread folder (downloads/<threadName>) to prevent parallel test collisions
             if (this.isRemote)
             {
-                string threadId = System.Threading.Thread.CurrentThread.Name!
-                    .Replace("[^a-zA-Z0-9]", "_");
+                string threadId = System.Threading.Thread.CurrentThread.ManagedThreadId.ToString();
                 this.downloadDir = new DirectoryInfo(
                     Path.Combine(Directory.GetCurrentDirectory(), "downloads", threadId));
             }
@@ -59,27 +44,33 @@ namespace Nimbus.Framework.Utils
         }
 
         /// <summary>
-        /// Ensure download directory exists and is clean BEFORE download starts.
+        /// Clean local folder and, if remote, clear the Grid-managed store for this session.
+        /// Call this BEFORE clicking the element that triggers the download.
         /// </summary>
         public void PrepareDownloadDir()
         {
+            if (isRemote && driver is RemoteWebDriver remote)
+            {
+                try
+                {
+                    remote.DeleteDownloadableFiles();
+                    Console.WriteLine("[DownloadHelper] Cleared remote managed downloads.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[DownloadHelper] Warning: could not clear remote downloads: " + ex.Message);
+                }
+            }
+
             try
             {
-                if (downloadDir.Exists)
+                if (!downloadDir.Exists) downloadDir.Create();
+                foreach (var f in downloadDir.GetFiles())
                 {
-                    foreach (var file in downloadDir.GetFiles())
-                    {
-                        try { file.Delete(); }
-                        catch (Exception)
-                        {
-                            Console.Error.WriteLine("Failed to delete file: " + file.FullName);
-                        }
-                    }
+                    try { f.Delete(); }
+                    catch (Exception e) { Console.WriteLine("[DownloadHelper] Failed to delete local file: " + e.Message); }
                 }
-                else
-                {
-                    downloadDir.Create();
-                }
+                Console.WriteLine("[DownloadHelper] Local download dir ready: " + downloadDir.FullName);
             }
             catch (Exception e)
             {
@@ -88,86 +79,185 @@ namespace Nimbus.Framework.Utils
         }
 
         /// <summary>
-        /// Waits for a file to be downloaded by the browser and returns the final file.
-        ///
-        /// Handles both local and remote Selenium WebDriver sessions.
+        /// Waits for a file to appear and stabilize, then returns it.
+        /// Works for any file type.
+        /// 
+        /// You can optionally target a specific server-side name or provide a predicate to choose a file.
+        /// If both are null, the helper picks the latest completed non-dot, non-.crdownload entry.
         /// </summary>
-        /// <returns>The fully downloaded <see cref="FileInfo"/>.</returns>
-        public FileInfo DownloadWhenReady()
+        /// <param name="expectedServerFileName">
+        /// Exact server-side name to wait for (e.g. "drylab.pdf"). Optional.
+        /// </param>
+        /// <param name="serverNamePredicate">
+        /// Predicate to select a server file (e.g. n => n.EndsWith(".zip", OrdinalIgnoreCase)). Optional.
+        /// </param>
+        /// <returns>Stable local FileInfo</returns>
+        public FileInfo DownloadWhenReady(string? expectedServerFileName = null,
+                                          Func<string, bool>? serverNamePredicate = null)
         {
-            int waitTime = int.Parse(ConfigLoader.Get("wait.timeout.seconds") ?? "30");
-            long end = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (waitTime * 1000);
-            long previousSize = -1;
+            int waitTimeSeconds = int.Parse(ConfigLoader.Get("wait.timeout.seconds") ?? "45");
+            long end = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + waitTimeSeconds * 1000L;
 
-            while (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() < end)
+            Console.WriteLine($"[DownloadHelper] Waiting up to {waitTimeSeconds}s (remote={isRemote})");
+
+            if (isRemote && driver is RemoteWebDriver remote)
             {
-                try
+                // Track which server files we've already transferred locally to avoid re-download attempts.
+                var downloadedOnce = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                string? lastChosen = null;
+                long previousSize = -1;
+
+                while (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() < end)
                 {
-                    if (isRemote)
+                    try
                     {
-                        // REMOTE MODE (Selenium Grid)
-                        var remote = (RemoteWebDriver)driver;
-                        IReadOnlyCollection<string> allFiles = remote.GetDownloadableFiles();
-                        if (allFiles.Count == 0)
+                        var all = remote.GetDownloadableFiles();
+                        Console.WriteLine($"[DownloadHelper] Remote file list: {string.Join(", ", all)}");
+
+                        // Choose a server file:
+                        string? serverName = null;
+
+                        if (!string.IsNullOrWhiteSpace(expectedServerFileName))
                         {
-                            System.Threading.Thread.Sleep(300);
-                            continue;
-                        }
-
-                        Console.WriteLine("Remote file candidate: " + allFiles.First());
-
-                        var fileName = allFiles.FirstOrDefault(f => !f.EndsWith(".crdownload"));
-                        if (fileName == null)
-                        {
-                            System.Threading.Thread.Sleep(300);
-                            continue;
-                        }
-
-                        string localPath = Path.Combine(downloadDir.FullName, fileName);
-                        remote.DownloadFile(fileName, downloadDir.FullName);
-
-                        System.Threading.Thread.Sleep(300);
-
-                        var f = new FileInfo(localPath);
-                        if (!f.Exists) continue;
-
-                        long size = f.Length;
-                        if (size > 0 && size == previousSize)
-                        {
-                            return f;
-                        }
-                        previousSize = size;
-                    }
-                    else
-                    {
-                        // LOCAL MODE
-                        foreach (var file in downloadDir.EnumerateFiles())
-                        {
-                            if (!file.Name.EndsWith(".crdownload"))
+                            serverName = all.FirstOrDefault(n =>
+                                n.Equals(expectedServerFileName, StringComparison.OrdinalIgnoreCase));
+                            if (serverName == null)
                             {
-                                long size = file.Length;
-                                if (size > 0 && size == previousSize)
-                                {
-                                    return file;
-                                }
-                                previousSize = size;
+                                // Still waiting for the specific file to show
+                                System.Threading.Thread.Sleep(250);
+                                continue;
                             }
                         }
+                        else if (serverNamePredicate != null)
+                        {
+                            serverName = all.FirstOrDefault(n =>
+                                !IsPartial(n) && !IsDotfile(n) && serverNamePredicate(n));
+                        }
+                        else
+                        {
+                            serverName = all
+                                .Where(n => !IsPartial(n) && !IsDotfile(n))
+                                .OrderBy(n => n)
+                                .LastOrDefault();
+                        }
+
+                        if (serverName == null)
+                        {
+                            // Either only partials/dotfiles exist, or the expected file hasn't appeared yet
+                            System.Threading.Thread.Sleep(250);
+                            continue;
+                        }
+
+                        var localPath = Path.Combine(downloadDir.FullName, serverName);
+                        var local = new FileInfo(localPath);
+
+                        // Download only once per server name
+                        if (!downloadedOnce.Contains(serverName))
+                        {
+                            Console.WriteLine($"[DownloadHelper] Downloading '{serverName}' -> {localPath}");
+                            try
+                            {
+                                remote.DownloadFile(serverName, downloadDir.FullName);
+                                downloadedOnce.Add(serverName);
+                            }
+                            catch (IOException ioex) when (ioex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+                            {
+                                // A previous poll already pulled it — mark as downloaded and move on to stability check
+                                Console.WriteLine("[DownloadHelper] Local file already exists; continuing to stability check.");
+                                downloadedOnce.Add(serverName);
+                            }
+
+                            // small flush wait
+                            System.Threading.Thread.Sleep(150);
+                            local.Refresh();
+                        }
+                        else
+                        {
+                            // Already downloaded; just re-check stability
+                            local.Refresh();
+                        }
+
+                        if (!local.Exists)
+                        {
+                            Console.WriteLine("[DownloadHelper] Local file still not visible; retrying...");
+                            System.Threading.Thread.Sleep(200);
+                            continue;
+                        }
+
+                        long size = local.Length;
+                        Console.WriteLine($"[DownloadHelper] {local.Name} size={size} (prev={previousSize})");
+
+                        // "Stable twice" rule: same size in two consecutive polls and non-zero
+                        if (lastChosen != null &&
+                            lastChosen.Equals(serverName, StringComparison.OrdinalIgnoreCase) &&
+                            size > 0 && size == previousSize)
+                        {
+                            Console.WriteLine($"[DownloadHelper] {local.Name} is stable. Returning.");
+                            return local;
+                        }
+
+                        lastChosen = serverName;
+                        previousSize = size;
                     }
-                }
-                catch
-                {
-                    // Swallow exceptions to allow polling to continue
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("[DownloadHelper] Poll exception: " + e);
+                    }
+
+                    System.Threading.Thread.Sleep(250);
                 }
 
-                try
-                {
-                    System.Threading.Thread.Sleep(300);
-                }
-                catch { }
+                throw new Exception("File was not fully downloaded and stable within timeout (remote).");
             }
+            else
+            {
+                // === LOCAL MODE ===
+                long previousSize = -1;
+                string? lastName = null;
 
-            throw new Exception("File was not fully downloaded and stable within timeout.");
+                while (DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() < end)
+                {
+                    foreach (var f in downloadDir.EnumerateFiles())
+                    {
+                        if (f.Name.EndsWith(".crdownload", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        if (!string.IsNullOrWhiteSpace(expectedServerFileName) &&
+                            !f.Name.Equals(expectedServerFileName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue; // user asked for a specific name
+                        }
+
+                        if (serverNamePredicate != null && !serverNamePredicate(f.Name))
+                            continue;
+
+                        f.Refresh();
+                        long size = f.Length;
+                        Console.WriteLine($"[DownloadHelper] Local {f.Name} size={size} (prev={previousSize})");
+
+                        if (lastName != null &&
+                            f.Name.Equals(lastName, StringComparison.OrdinalIgnoreCase) &&
+                            size > 0 && size == previousSize)
+                        {
+                            Console.WriteLine($"[DownloadHelper] Local {f.Name} is stable. Returning.");
+                            return f;
+                        }
+
+                        lastName = f.Name;
+                        previousSize = size;
+                    }
+
+                    System.Threading.Thread.Sleep(250);
+                }
+
+                throw new Exception("File was not fully downloaded and stable within timeout (local).");
+            }
         }
+
+        private static bool IsPartial(string name) =>
+            name.EndsWith(".crdownload", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsDotfile(string name) =>
+            name.StartsWith(".", StringComparison.Ordinal); // e.g., .com.google.Chrome.*
     }
 }

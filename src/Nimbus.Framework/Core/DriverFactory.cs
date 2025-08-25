@@ -192,48 +192,125 @@ namespace Nimbus.Framework.Core
             }
         }
 
+        // /// <summary>
+        // /// Configures download directory and behavior for the given browser options.
+        // /// </summary>
+        // private void ConfigureDownloadDirectory(DriverOptions options)
+        // {
+        //     string containerDownloadDir;
+        //     if (bool.TryParse(ConfigLoader.Get("remote"), out var isRemote) && isRemote)
+        //     {
+        //         containerDownloadDir = Environment.GetEnvironmentVariable("DOWNLOAD_DIR") ?? "";
+        //     }
+        //     else
+        //     {
+        //         containerDownloadDir = Path.Combine(Directory.GetCurrentDirectory(), "downloads");
+        //         Console.WriteLine($"download path = {containerDownloadDir}");
+        //     }
+
+        //     switch (options)
+        //     {
+        //         case FirefoxOptions firefox:
+        //             firefox.SetPreference("browser.download.folderList", 2);
+        //             firefox.SetPreference("browser.download.dir", containerDownloadDir);
+        //             firefox.SetPreference("browser.helperApps.neverAsk.saveToDisk", "application/pdf");
+        //             firefox.SetPreference("pdfjs.disabled", true);
+        //             break;
+
+        //         case ChromeOptions chrome:
+        //             {
+        //                 chrome.AddUserProfilePreference("download.default_directory", containerDownloadDir);
+        //                 chrome.AddUserProfilePreference("download.prompt_for_download", false);
+        //                 chrome.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
+        //                 chrome.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
+        //                 chrome.AddUserProfilePreference("credentials_enable_service", false);
+        //                 chrome.AddUserProfilePreference("profile.password_manager_enabled", false);
+        //                 chrome.AddUserProfilePreference("profile.default_content_setting_values.automatic_downloads", 1);
+        //                 break;
+        //             }
+
+        //         case EdgeOptions edge:
+        //             edge.AddUserProfilePreference("download.default_directory", containerDownloadDir);
+        //             edge.AddUserProfilePreference("download.prompt_for_download", false);
+        //             edge.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
+        //             // Same key works for Edge (Chromium-based):
+        //             edge.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
+        //             edge.AddUserProfilePreference("credentials_enable_service", false);
+        //             edge.AddUserProfilePreference("profile.password_manager_enabled", false);
+        //             edge.AddUserProfilePreference("profile.default_content_setting_values.automatic_downloads", 1);
+        //             break;
+        //     }
+        // }
+
         /// <summary>
-        /// Configures download directory and behavior for the given browser options.
+        /// Local runs: set a real folder so we can poll it.
+        /// Remote/Grid: DO NOT set download.default_directory; rely on Managed Downloads,
+        ///              but set viewer prefs so PDFs download instead of opening.
         /// </summary>
         private void ConfigureDownloadDirectory(DriverOptions options)
         {
-            string containerDownloadDir;
-            if (bool.TryParse(ConfigLoader.Get("remote"), out var isRemote) && isRemote)
+            if (this.remote)
             {
-                containerDownloadDir = Environment.GetEnvironmentVariable("DOWNLOAD_DIR") ?? "";
+                // Remote/Grid: minimal prefs to force "download instead of open" for PDFs.
+                // Do NOT set a directory path in remote mode.
+                switch (options)
+                {
+                    case ChromeOptions chrome:
+                        // Don’t open the built-in PDF viewer; trigger a download instead
+                        chrome.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
+                        // Don’t show the “Keep/Discard” bar
+                        chrome.AddUserProfilePreference("download.prompt_for_download", false);
+                        // Optional: avoid handing PDFs to system viewer
+                        chrome.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
+                        break;
+
+                    case EdgeOptions edge:
+                        edge.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
+                        edge.AddUserProfilePreference("download.prompt_for_download", false);
+                        edge.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
+                        break;
+
+                    case FirefoxOptions firefox:
+                        // Disable built-in PDF viewer so Firefox treats PDF as a download
+                        firefox.SetPreference("pdfjs.disabled", true);
+                        // Tell Firefox to save PDFs without asking
+                        firefox.SetPreference("browser.helperApps.neverAsk.saveToDisk", "application/pdf");
+                        // Use a “custom” download behavior (no path specified in remote mode)
+                        firefox.SetPreference("browser.download.useDownloadDir", true);
+                        break;
+                }
+
+                return; // Important: don’t set any path in remote mode
             }
-            else
-            {
-                containerDownloadDir = Path.Combine(Directory.GetCurrentDirectory(), "downloads");
-                Console.WriteLine($"download path = {containerDownloadDir}");
-            }
+
+            // === Local mode ===
+            string localDownloadDir = Path.Combine(Directory.GetCurrentDirectory(), "downloads");
+            Console.WriteLine($"download path = {localDownloadDir}");
 
             switch (options)
             {
                 case FirefoxOptions firefox:
                     firefox.SetPreference("browser.download.folderList", 2);
-                    firefox.SetPreference("browser.download.dir", containerDownloadDir);
+                    firefox.SetPreference("browser.download.dir", localDownloadDir);
                     firefox.SetPreference("browser.helperApps.neverAsk.saveToDisk", "application/pdf");
                     firefox.SetPreference("pdfjs.disabled", true);
+                    firefox.SetPreference("browser.download.useDownloadDir", true);
                     break;
 
                 case ChromeOptions chrome:
-                    {
-                        chrome.AddUserProfilePreference("download.default_directory", containerDownloadDir);
-                        chrome.AddUserProfilePreference("download.prompt_for_download", false);
-                        chrome.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
-                        chrome.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
-                        chrome.AddUserProfilePreference("credentials_enable_service", false);
-                        chrome.AddUserProfilePreference("profile.password_manager_enabled", false);
-                        chrome.AddUserProfilePreference("profile.default_content_setting_values.automatic_downloads", 1);
-                        break;
-                    }
+                    chrome.AddUserProfilePreference("download.default_directory", localDownloadDir);
+                    chrome.AddUserProfilePreference("download.prompt_for_download", false);
+                    chrome.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
+                    chrome.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
+                    chrome.AddUserProfilePreference("credentials_enable_service", false);
+                    chrome.AddUserProfilePreference("profile.password_manager_enabled", false);
+                    chrome.AddUserProfilePreference("profile.default_content_setting_values.automatic_downloads", 1);
+                    break;
 
                 case EdgeOptions edge:
-                    edge.AddUserProfilePreference("download.default_directory", containerDownloadDir);
+                    edge.AddUserProfilePreference("download.default_directory", localDownloadDir);
                     edge.AddUserProfilePreference("download.prompt_for_download", false);
                     edge.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
-                    // Same key works for Edge (Chromium-based):
                     edge.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
                     edge.AddUserProfilePreference("credentials_enable_service", false);
                     edge.AddUserProfilePreference("profile.password_manager_enabled", false);
@@ -242,12 +319,15 @@ namespace Nimbus.Framework.Core
             }
         }
 
+
         /// <summary>
         /// Adds Selenium Grid-specific capabilities (test name, downloads enabled, platform, logging).
         /// </summary>
         private void AddRemoteCapabilities(DriverOptions options)
         {
             options.AddAdditionalOption("se:name", testSuiteName);
+            // Enable Managed Downloads on the node side
+            options.EnableDownloads = true;
             options.PlatformName = "linux";
         }
 

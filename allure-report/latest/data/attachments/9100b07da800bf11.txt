@@ -1,0 +1,17 @@
+Remote Grid URL being used: http://localhost:4444
+[VERIFY] Confirming 'Sample Documents' header is visible.
+[DownloadHelper] Cleared remote managed downloads.
+[DownloadHelper] Local download dir ready: /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Testing/bin/Release/net9.0/downloads/14
+[ACTION] Clicking Newsletter PDF link to start download.
+[ACTION] Clicked on the element: By.XPath: //div[@id='newsletter']//a[text()='PDF']
+[WAIT] Waiting for downloaded PDF file to appear.
+[DownloadHelper] Waiting up to 45s (remote=True)
+[DownloadHelper] Remote file list: drylab.pdf.crdownload
+[DownloadHelper] Remote file list: drylab.pdf
+[DownloadHelper] Downloading 'drylab.pdf' -> /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Testing/bin/Release/net9.0/downloads/14/drylab.pdf
+[DownloadHelper] drylab.pdf size=1377202 (prev=-1)
+[DownloadHelper] Remote file list: drylab.pdf
+[DownloadHelper] drylab.pdf size=1377202 (prev=1377202)
+[DownloadHelper] drylab.pdf is stable. Returning.
+[ASSERT] Verifying expected text is present in the PDF.
+Test passed: VerifyDownloadedPdfFromFileExamples

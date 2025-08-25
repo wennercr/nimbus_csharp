@@ -1,0 +1,4 @@
+Remote Grid URL being used: http://localhost:4444
+Starting api create test
+Here is the response: {"name":"Morpheus","job":"Leader","id":"627","createdAt":"2025-08-25T18:49:55.035Z"}
+Test passed: CreateUserViaApiShouldReturnSuccess

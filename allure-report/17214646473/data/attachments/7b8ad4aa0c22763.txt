@@ -1,0 +1,7 @@
+Remote Grid URL being used: http://localhost:4444
+[VERIFY] Confirming 'Sample Documents' header is visible.
+[ACTION] Clicking Newsletter PDF link to start download.
+[ACTION] Clicked on the element: By.XPath: //div[@id='newsletter']//a[text()='PDF']
+[WAIT] Waiting for downloaded PDF file to appear.
+Test failed: VerifyDownloadedPdfFromFileExamples
+System.Exception : File was not fully downloaded and stable within timeout.

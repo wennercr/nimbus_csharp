@@ -74,7 +74,7 @@ steps:
 - powershell: |
     $ErrorActionPreference = 'Stop'
 
-    # --- Build the category filter: TestCategory=a|TestCategory=b ---
+    # --- Build category filter: TestCategory=a|TestCategory=b ---
     $raw = "$(GROUPS)".Replace(" ", "")
     $filter = ""
     if ($raw) {
@@ -87,7 +87,22 @@ steps:
     }
     Write-Host "Filter: $filter"
 
-    # --- Build VSTest CLI runsettings as ONE string (semicolon-separated) ---
+    # Paths
+    $proj = 'src/Nimbus.Testing/Nimbus.Testing.csproj'
+    $resultsDir = 'target/test-results'
+    $diagDir    = Join-Path $resultsDir 'diag'
+    New-Item -ItemType Directory -Force -Path $resultsDir,$diagDir | Out-Null
+    $diagFile   = Join-Path $diagDir 'vstest.log'
+
+    # Pre-flight diagnostics
+    Write-Host '--- dotnet --info ---'
+    & dotnet --info
+    if (-not (Test-Path $proj)) {
+      Write-Error "Project file not found: $proj"
+    }
+    Write-Host 'Project file exists.'
+
+    # Build ONE semicolon-separated runsettings string
     $cliSettingsItems = @(
       "NUnit.NumberOfTestWorkers=$(THREADS)"
       "TestRunParameters.Parameter(name=`"testSuiteName`", value=`"$(SUITE_NAME)`")"
@@ -98,52 +113,46 @@ steps:
     )
     $cliSettings = ($cliSettingsItems -join ';')
 
-    # Paths for results + diagnostics
-    $resultsDir = 'target/test-results'
-    $diagDir    = Join-Path $resultsDir 'diag'
-    New-Item -ItemType Directory -Force -Path $diagDir | Out-Null
-    $diagFile   = Join-Path $diagDir 'vstest.log'
-
-    # Build args array (safe on Windows PowerShell 5.1)
+    # Build args array and QUOTE MSBuild property values
     $args = @(
       'test',
       '--configuration','Release',
       '--no-build',
-      '--verbosity','normal',                               # MSBuild verbosity
-      '--logger','console;verbosity=detailed',              # more console detail
-      '--logger','trx;LogFileName=test_results.trx',        # TRX for Azure Test tab
+      '--verbosity','diag',
+      '--logger','console;verbosity=detailed',
+      '--logger','trx;LogFileName=test_results.trx',
       '--results-directory',$resultsDir,
-      'src/Nimbus.Testing/Nimbus.Testing.csproj',
-      "-p:VSTestCLIRunSettings=$cliSettings"
+      '--diag', $diagFile,
+      $proj,
+      "-p:VSTestCLIRunSettings=""$cliSettings"""
     )
-    if ($filter) { $args += "-p:VSTestTestCaseFilter=$filter" }
-    $args += '--diag', $diagFile                            # VSTest diagnostics
+    if ($filter) {
+      $args += "-p:VSTestTestCaseFilter=""$filter"""
+    }
 
     Write-Host "Running: dotnet $($args -join ' ')"
     & dotnet @args
     $code = $LASTEXITCODE
     Write-Host "dotnet test exit code: $code"
 
-    # Summarize TRX results if present
+    # Summarize TRX (if produced)
     $trxFiles = Get-ChildItem -Path $resultsDir -Recurse -Filter *.trx -ErrorAction SilentlyContinue
     if ($trxFiles) {
-      Write-Host "Found TRX files:"
       foreach ($f in $trxFiles) {
         try {
           [xml]$x = Get-Content $f.FullName
           $sum = $x.TestRun.ResultSummary
           $cnt = $sum.Counters
-          Write-Host ("  {0} -> Outcome={1} Total={2} Passed={3} Failed={4} Skipped={5}" -f `
+          Write-Host ("TRX {0} -> Outcome={1} Total={2} Passed={3} Failed={4} Skipped={5}" -f `
             $f.Name, $sum.outcome, $cnt.total, $cnt.passed, $cnt.failed, $cnt.notExecuted)
         } catch {
-          Write-Warning "  Could not parse $($f.FullName): $($_.Exception.Message)"
+          Write-Warning "Could not parse $($f.FullName): $($_.Exception.Message)"
         }
       }
     } else {
       Write-Warning "No TRX files found under $resultsDir"
     }
 
-    # Show tail of vstest diagnostics for quick clues
     if (Test-Path $diagFile) {
       Write-Host '--- Last 200 lines of VSTest diagnostics ---'
       Get-Content $diagFile -Tail 200 | ForEach-Object { Write-Host $_ }
@@ -153,7 +162,6 @@ steps:
 
     exit $code
   displayName: Run Nimbus tests
-
 
 # Publish TRX so results show in Azure's Tests tab
 - task: PublishTestResults@2

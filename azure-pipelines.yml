@@ -73,15 +73,37 @@ steps:
 # Run tests with multi-category filter (smoke,login -> TestCategory=smoke|TestCategory=login)
 - powershell: |
     $ErrorActionPreference = 'Stop'
+
+    # Build OR filter like: TestCategory=smoke|TestCategory=login
     $raw = "$(GROUPS)".Replace(" ", "")
-    $filter = ($raw -split ',' | Where-Object { $_ } | ForEach-Object { "TestCategory=$_" }) -join '|'
+    $parts = $raw -split ',' | Where-Object { $_ }
+    $filter = ($parts | ForEach-Object { "TestCategory=$_" }) -join '|'
+
     $runsetPath = 'nimbus.runsettings'
+    if (-not (Test-Path $runsetPath)) { throw "Runsettings not found at $runsetPath" }
+
     if ($filter) {
-      # insert <TestCaseFilter> into the <RunConfiguration> block if not present
-      (Get-Content $runsetPath) -replace '<RunConfiguration>\s*', "<RunConfiguration>`r`n    <TestCaseFilter>$filter</TestCaseFilter>`r`n"
-        | Set-Content $runsetPath
+      # Load XML and inject/replace <TestCaseFilter>
+      [xml]$doc = Get-Content -Raw $runsetPath
+      $rc = $doc.RunSettings.RunConfiguration
+      if (-not $rc) {
+        $rc = $doc.CreateElement('RunConfiguration')
+        $doc.RunSettings.AppendChild($rc) | Out-Null
+      }
+      if ($rc.TestCaseFilter) {
+        $rc.TestCaseFilter = $filter
+      } else {
+        $node = $doc.CreateElement('TestCaseFilter')
+        $node.InnerText = $filter
+        $rc.AppendChild($node) | Out-Null
+      }
+      $doc.Save($runsetPath)
     }
 
+    # Ensure results dir exists
+    New-Item -ItemType Directory -Force -Path 'target/test-results' | Out-Null
+
+    # Run tests using the runsettings file
     & dotnet test `
       --configuration Release `
       --no-build `
@@ -92,6 +114,7 @@ steps:
 
     exit $LASTEXITCODE
   displayName: Run Nimbus tests
+
 
 
 # Publish TRX so results show in Azure's Tests tab

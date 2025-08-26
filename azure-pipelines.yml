@@ -120,10 +120,14 @@ steps:
     $nunit = $runSettings.NUnit
     if (-not $nunit) { $nunit = $doc.CreateElement('NUnit'); $runSettings.AppendChild($nunit) | Out-Null }
 
-    # Helper: set/replace <Parameter name="x" value="y" />
-    function Set-Param([xml]$root, [string]$name, [string]$value) {
+    # FIX: accept XmlElement, not XmlDocument
+    function Set-Param([System.Xml.XmlElement]$root, [string]$name, [string]$value) {
       $node = $root.SelectSingleNode("Parameter[@name='$name']")
-      if (-not $node) { $node = $doc.CreateElement('Parameter'); $node.SetAttribute('name', $name); $root.AppendChild($node) | Out-Null }
+      if (-not $node) {
+        $node = $root.OwnerDocument.CreateElement('Parameter')
+        $node.SetAttribute('name', $name)
+        $root.AppendChild($node) | Out-Null
+      }
       $node.SetAttribute('value', $value)
     }
 
@@ -168,6 +172,7 @@ steps:
 
     exit $LASTEXITCODE
   displayName: Run Nimbus tests
+
 
 # Publish TRX to Tests tab
 - task: PublishTestResults@2

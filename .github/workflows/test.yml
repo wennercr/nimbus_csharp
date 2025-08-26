@@ -96,20 +96,29 @@ jobs:
 
       - name: Run tests
         run: |
-          # Turn "smoke,login" into "smoke|login" for VSTest OR
-          FILTER_VALUE="${GROUPS}"
-          if [ -n "${FILTER_VALUE}" ]; then
-            FILTER_VALUE="${FILTER_VALUE//,/|}"
-            FILTER_ARG="--filter TestCategory=${FILTER_VALUE}"
-          else
-            FILTER_ARG=""
+          # Build VSTest filter like: TestCategory=a|TestCategory=b|TestCategory=c
+          RAW="${GROUPS}"
+          RAW="${RAW// /}"  # remove spaces
+          FILTER=""
+          if [ -n "${RAW}" ]; then
+            IFS=',' read -ra PARTS <<< "${RAW}"
+            for p in "${PARTS[@]}"; do
+              [ -z "$p" ] && continue
+              if [ -z "${FILTER}" ]; then
+                FILTER="TestCategory=${p}"
+              else
+                FILTER="${FILTER}|TestCategory=${p}"
+              fi
+            done
           fi
+
+          echo "Computed filter: ${FILTER:-<none>}"
 
           dotnet test \
             --configuration Release \
             --no-build \
             --logger "trx;LogFileName=test_results.trx" \
-            ${FILTER_ARG} \
+            ${FILTER:+--filter "${FILTER}"} \
             --results-directory target/test-results \
             -- \
             "NUnit.NumberOfTestWorkers=${THREADS}" \
@@ -119,6 +128,7 @@ jobs:
             "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
             "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")"
         continue-on-error: true
+
 
 
 

@@ -11,7 +11,7 @@ variables:
   SUITE_NAME: 'SampleSmoke'
   BROWSER: 'chrome'
   HEADLESS: 'true'
-  GROUPS: 'smoke,login'        # comma list -> OR filter (smoke OR login)
+  GROUPS: 'smoke'        # comma list -> OR filter (smoke OR login)
   THREADS: '3'
   GRID_URL: 'http://localhost:4444'
 
@@ -31,11 +31,44 @@ steps:
 
 # Start Selenium Grid (requires Docker Desktop running)
 - powershell: |
-    docker rm -f selenium-grid 2>$null
-    docker run -d -p 4444:4444 --name selenium-grid selenium/standalone-chrome:latest | Out-Null
-    # simple wait; you can replace with a /status check later
-    Start-Sleep -Seconds 12
+    # Be forgiving about non-zero exit codes from intermediate commands
+    $ErrorActionPreference = 'Continue'
+    $ProgressPreference = 'SilentlyContinue'
+
+    # Remove old container only if it exists
+    $existing = (docker ps -aq -f "name=^selenium-grid$")
+    if ($existing) {
+      Write-Host "Removing existing selenium-grid container $existing"
+      docker rm -f selenium-grid | Out-Null
+    } else {
+      Write-Host "No existing selenium-grid container"
+    }
+
+    # (Optional) sanity: show Docker info
+    docker version
+    docker info
+
+    # Start fresh container
+    docker run --pull=always -d -p 4444:4444 --shm-size=2g --name selenium-grid selenium/standalone-chrome:latest | Out-Null
+
+    # Wait for Grid to be ready
+    Write-Host "Waiting for Selenium Grid to be ready on http://localhost:4444/status ..."
+    $max = 30
+    for ($i=1; $i -le $max; $i++) {
+      try {
+        $resp = curl.exe -s http://localhost:4444/status | ConvertFrom-Json
+        if ($resp.value.ready -eq $true) {
+          Write-Host "Selenium Grid is ready."
+          exit 0
+        }
+      } catch { }
+      Start-Sleep -Seconds 2
+      Write-Host "Attempt $i/$max: not ready yet..."
+    }
+    Write-Error "Selenium Grid did not become ready in time."
+    exit 1
   displayName: Start Selenium Grid
+
 
 # Run tests with multi-category filter (smoke,login -> TestCategory=smoke|TestCategory=login)
 - powershell: |

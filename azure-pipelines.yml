@@ -1,20 +1,65 @@
+# =======================
+# Azure Pipelines (Nimbus C#)
+# Self-hosted Windows agent
+# =======================
+
 trigger:
 - main
 
-# Self-hosted agent on your PC
+# ---------- Inputs (shown on "Run pipeline") ----------
+parameters:
+- name: suiteName
+  displayName: Test suite name
+  type: string
+  default: SampleSmoke
+
+- name: browser
+  displayName: Browser
+  type: string
+  default: chrome
+  values: [chrome, edge, firefox]
+
+- name: headless
+  displayName: Headless?
+  type: boolean
+  default: true
+
+- name: groups
+  displayName: Categories (comma-separated)
+  type: string
+  default: smoke,login
+
+- name: threads
+  displayName: # of parallel workers
+  type: number
+  default: 3
+
+- name: gridUrl
+  displayName: Selenium Grid URL
+  type: string
+  default: http://localhost:4444
+
+# ---------- Variables bridged from parameters ----------
+variables:
+  SUITE_NAME: ${{ parameters.suiteName }}
+  BROWSER:    ${{ parameters.browser }}
+  HEADLESS:   ${{ parameters.headless }}
+  GROUPS:     ${{ parameters.groups }}
+  THREADS:    ${{ parameters.threads }}
+  GRID_URL:   ${{ parameters.gridUrl }}
+
+  # Paths
+  TEST_PROJ: 'src/Nimbus.Testing/Nimbus.Testing.csproj'
+  TRX_DIR:   'target/test-results'
+  ALLURE_RESULTS_DIR: 'src/Nimbus.Testing/bin/Release/net9.0/target/allure-results'
+
+# ---------- Agent pool ----------
 pool:
-  name: Default                # your agent pool name
+  name: Default
   demands:
     - Agent.OS -equals Windows_NT
 
-variables:
-  SUITE_NAME: 'SampleSmoke'
-  BROWSER: 'chrome'
-  HEADLESS: 'true'
-  GROUPS: 'smoke'        # comma list -> OR filter (smoke OR login)
-  THREADS: '3'
-  GRID_URL: 'http://localhost:4444'
-
+# ---------- Pipeline ----------
 steps:
 - checkout: self
 
@@ -29,48 +74,25 @@ steps:
 - powershell: dotnet build --configuration Release --no-restore
   displayName: Build
 
-# Start Selenium Grid (requires Docker Desktop running)
+# Start Selenium Grid locally (Docker Desktop must be running)
 - powershell: |
-    $ErrorActionPreference = 'Continue'
-    $ProgressPreference = 'SilentlyContinue'
+    $ErrorActionPreference = 'Stop'
 
-    # Remove old container if it exists
-    $existing = (docker ps -aq -f "name=^selenium-grid$")
-    if ($existing) {
-      Write-Host "Removing existing selenium-grid container $existing"
-      docker rm -f selenium-grid | Out-Null
-    } else {
-      Write-Host "No existing selenium-grid container"
-    }
+    $existing = docker ps -aq -f "name=^selenium-grid$"
+    if ($existing) { docker rm -f selenium-grid | Out-Null }
 
-    # Diagnostics (optional)
-    docker version
-    docker info
-
-    # Start fresh container
     docker run --pull=always -d -p 4444:4444 --shm-size=2g --name selenium-grid selenium/standalone-chrome:latest | Out-Null
 
-    # Wait for Grid readiness
-    Write-Host "Waiting for Selenium Grid to be ready on http://localhost:4444/status ..."
-    $max = 30
-    for ($i = 1; $i -le $max; $i++) {
-      try {
-        $resp = curl.exe -s http://localhost:4444/status | ConvertFrom-Json
-        if ($resp.value.ready -eq $true) {
-          Write-Host "Selenium Grid is ready."
-          exit 0
-        }
-      } catch { }
-      Start-Sleep -Seconds 2
-      Write-Host "Attempt $($i)/$($max): not ready yet..."
+    # readiness check
+    $ready = $false
+    1..30 | ForEach-Object {
+      try { $r = curl.exe -s http://localhost:4444/status | ConvertFrom-Json; if ($r.value.ready) { $ready = $true; break } } catch {}
+      Start-Sleep 2
     }
-    Write-Error "Selenium Grid did not become ready in time."
-    exit 1
+    if (-not $ready) { throw "Selenium Grid not ready at http://localhost:4444/status" }
   displayName: Start Selenium Grid
 
-
-
-# Run tests with multi-category filter (smoke,login -> TestCategory=smoke|TestCategory=login)
+# Run tests (edit runsettings XML with your inputs; no fragile quoting)
 - powershell: |
     $ErrorActionPreference = 'Stop'
 
@@ -82,59 +104,89 @@ steps:
     $runsetPath = 'nimbus.runsettings'
     if (-not (Test-Path $runsetPath)) { throw "Runsettings not found at $runsetPath" }
 
-    if ($filter) {
-      # Load XML and inject/replace <TestCaseFilter>
-      [xml]$doc = Get-Content -Raw $runsetPath
-      $rc = $doc.RunSettings.RunConfiguration
-      if (-not $rc) {
-        $rc = $doc.CreateElement('RunConfiguration')
-        $doc.RunSettings.AppendChild($rc) | Out-Null
-      }
-      if ($rc.TestCaseFilter) {
-        $rc.TestCaseFilter = $filter
-      } else {
-        $node = $doc.CreateElement('TestCaseFilter')
-        $node.InnerText = $filter
-        $rc.AppendChild($node) | Out-Null
-      }
-      $doc.Save($runsetPath)
+    # Load runsettings XML
+    [xml]$doc = Get-Content -Raw $runsetPath
+
+    # Ensure nodes exist
+    $runSettings = $doc.RunSettings
+    if (-not $runSettings) { $runSettings = $doc.CreateElement('RunSettings'); $doc.AppendChild($runSettings) | Out-Null }
+
+    $rc = $runSettings.RunConfiguration
+    if (-not $rc) { $rc = $doc.CreateElement('RunConfiguration'); $runSettings.AppendChild($rc) | Out-Null }
+
+    $trp = $runSettings.TestRunParameters
+    if (-not $trp) { $trp = $doc.CreateElement('TestRunParameters'); $runSettings.AppendChild($trp) | Out-Null }
+
+    $nunit = $runSettings.NUnit
+    if (-not $nunit) { $nunit = $doc.CreateElement('NUnit'); $runSettings.AppendChild($nunit) | Out-Null }
+
+    # Helper: set/replace <Parameter name="x" value="y" />
+    function Set-Param([xml]$root, [string]$name, [string]$value) {
+      $node = $root.SelectSingleNode("Parameter[@name='$name']")
+      if (-not $node) { $node = $doc.CreateElement('Parameter'); $node.SetAttribute('name', $name); $root.AppendChild($node) | Out-Null }
+      $node.SetAttribute('value', $value)
     }
 
-    # Ensure results dir exists
-    New-Item -ItemType Directory -Force -Path 'target/test-results' | Out-Null
+    # Map pipeline variables to runsettings (lowercase boolean for headless)
+    $suiteName = "$(SUITE_NAME)"
+    $browser   = "$(BROWSER)"
+    $headless  = "$(HEADLESS)"; $headless = ($headless -as [string]).ToLower()
+    $remote    = "true"
+    $gridUrl   = "$(GRID_URL)"
+    $threads   = "$(THREADS)"
 
-    # Run tests using the runsettings file
+    Set-Param $trp 'testSuiteName' $suiteName
+    Set-Param $trp 'browser'      $browser
+    Set-Param $trp 'headless'     $headless
+    Set-Param $trp 'remote'       $remote
+    Set-Param $trp 'gridUrl'      $gridUrl
+
+    $workers = $nunit.NumberOfTestWorkers
+    if (-not $workers) { $workers = $doc.CreateElement('NumberOfTestWorkers'); $nunit.AppendChild($workers) | Out-Null }
+    $workers.InnerText = $threads
+
+    if ($filter) {
+      if ($rc.TestCaseFilter) { $rc.TestCaseFilter = $filter }
+      else { $node = $doc.CreateElement('TestCaseFilter'); $node.InnerText = $filter; $rc.AppendChild($node) | Out-Null }
+    } else {
+      if ($rc.TestCaseFilter) { $rc.RemoveChild($rc.TestCaseFilter) | Out-Null }
+    }
+
+    $doc.Save($runsetPath)
+
+    # Ensure results dir exists
+    New-Item -ItemType Directory -Force -Path '$(TRX_DIR)' | Out-Null
+
+    # Run tests
     & dotnet test `
       --configuration Release `
       --no-build `
       --logger "trx;LogFileName=test_results.trx" `
-      --results-directory target/test-results `
+      --results-directory "$(TRX_DIR)" `
       --settings $runsetPath `
-      src/Nimbus.Testing/Nimbus.Testing.csproj
+      "$(TEST_PROJ)"
 
     exit $LASTEXITCODE
   displayName: Run Nimbus tests
 
-
-
-# Publish TRX so results show in Azure's Tests tab
+# Publish TRX to Tests tab
 - task: PublishTestResults@2
   condition: always()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: 'target/test-results/**/*.trx'
+    testResultsFiles: '$(TRX_DIR)/**/*.trx'
     failTaskOnFailedTests: false
-  displayName: Publish TRX to Azure
+  displayName: Publish TRX
 
+# Allure (uses the Azure DevOps extension)
 - task: PublishAllureReport@1
   displayName: "Publish Allure report"
   condition: always()
   inputs:
-    # point at the folder that contains *.json, *.txt, attachments/ from Allure adapter
-    testResultsDir: "src/Nimbus.Testing/bin/Release/net9.0/target/allure-results"
+    testResultsDir: "$(ALLURE_RESULTS_DIR)"
     reportName: "Nimbus – $(Build.BuildNumber)"
 
-# Cleanup container
+# Cleanup Selenium container
 - powershell: docker rm -f selenium-grid 2>$null
   displayName: Stop Selenium Grid
   condition: always()

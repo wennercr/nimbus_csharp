@@ -126,6 +126,14 @@ steps:
     failTaskOnFailedTests: false
   displayName: Publish TRX to Azure
 
+- task: PublishAllureReport@1
+  displayName: "Publish Allure report"
+  condition: always()
+  inputs:
+    # point at the folder that contains *.json, *.txt, attachments/ from Allure adapter
+    testResultsDir: "src/Nimbus.Testing/bin/Release/net9.0/target/allure-results"
+    reportName: "Nimbus – $(Build.BuildNumber)"
+
 # Cleanup container
 - powershell: docker rm -f selenium-grid 2>$null
   displayName: Stop Selenium Grid

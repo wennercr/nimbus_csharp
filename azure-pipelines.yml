@@ -85,8 +85,19 @@ steps:
     }
     Write-Host "Filter: $filter"
 
-    $msbuildFilterArg = ""
-    if ($filter) { $msbuildFilterArg = "-p:VSTestTestCaseFilter=`"$filter`"" }
+    # Build VSTestCLIRunSettings as ONE semicolon-separated string
+    $cliSettingsItems = @(
+      "NUnit.NumberOfTestWorkers=$(THREADS)"
+      "TestRunParameters.Parameter(name=`"testSuiteName`", value=`"$(SUITE_NAME)`")"
+      "TestRunParameters.Parameter(name=`"browser`", value=`"$(BROWSER)`")"
+      "TestRunParameters.Parameter(name=`"headless`", value=`"$(HEADLESS)`")"
+      "TestRunParameters.Parameter(name=`"remote`", value=`"true`")"
+      "TestRunParameters.Parameter(name=`"gridUrl`", value=`"$(GRID_URL)`")"
+    )
+    $cliSettings = ($cliSettingsItems -join ';')
+
+    $filterArg = @()
+    if ($filter) { $filterArg += "-p:VSTestTestCaseFilter=`"$filter`"" }
 
     dotnet test `
       --configuration Release `
@@ -94,14 +105,8 @@ steps:
       --logger "trx;LogFileName=test_results.trx" `
       --results-directory target/test-results `
       src/Nimbus.Testing/Nimbus.Testing.csproj `
-      $msbuildFilterArg `
-      -- `
-      "NUnit.NumberOfTestWorkers=$(THREADS)" `
-      "TestRunParameters.Parameter(name=`"testSuiteName`", value=`"$(SUITE_NAME)`")" `
-      "TestRunParameters.Parameter(name=`"browser`", value=`"$(BROWSER)`")" `
-      "TestRunParameters.Parameter(name=`"headless`", value=`"$(HEADLESS)`")" `
-      "TestRunParameters.Parameter(name=`"remote`", value=`"true`")" `
-      "TestRunParameters.Parameter(name=`"gridUrl`", value=`"$(GRID_URL)`")"
+      -p:VSTestCLIRunSettings="$cliSettings" `
+      @filterArg
   displayName: Run Nimbus tests
 
 # Publish TRX so results show in Azure's Tests tab

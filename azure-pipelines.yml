@@ -73,114 +73,25 @@ steps:
 # Run tests with multi-category filter (smoke,login -> TestCategory=smoke|TestCategory=login)
 - powershell: |
     $ErrorActionPreference = 'Stop'
-
-    # ---------- Build category filter (OR across comma list) ----------
     $raw = "$(GROUPS)".Replace(" ", "")
-    $filter = ""
-    if ($raw) {
-      $parts = $raw -split ","
-      foreach ($p in $parts) {
-        if (-not [string]::IsNullOrWhiteSpace($p)) {
-          if ($filter) { $filter += "|TestCategory=$p" } else { $filter = "TestCategory=$p" }
-        }
-      }
+    $filter = ($raw -split ',' | Where-Object { $_ } | ForEach-Object { "TestCategory=$_" }) -join '|'
+    $runsetPath = 'nimbus.runsettings'
+    if ($filter) {
+      # insert <TestCaseFilter> into the <RunConfiguration> block if not present
+      (Get-Content $runsetPath) -replace '<RunConfiguration>\s*', "<RunConfiguration>`r`n    <TestCaseFilter>$filter</TestCaseFilter>`r`n"
+        | Set-Content $runsetPath
     }
-    Write-Host "Filter: $filter"
 
-    # ---------- Paths ----------
-    $proj       = 'src/Nimbus.Testing/Nimbus.Testing.csproj'
-    $resultsDir = 'target/test-results'
-    $diagDir    = Join-Path $resultsDir 'diag'
-    New-Item -ItemType Directory -Force -Path $resultsDir,$diagDir | Out-Null
-    $diagFile   = Join-Path $diagDir 'vstest.log'
-    $runsetPath = Join-Path $env:Agent_TempDirectory 'nimbus.runsettings'
+    & dotnet test `
+      --configuration Release `
+      --no-build `
+      --logger "trx;LogFileName=test_results.trx" `
+      --results-directory target/test-results `
+      --settings $runsetPath `
+      src/Nimbus.Testing/Nimbus.Testing.csproj
 
-    if (-not (Test-Path $proj)) { Write-Error "Project file not found: $proj" }
-
-    # ---------- Materialize a .runsettings file (no fragile quoting) ----------
-    $SuiteName = "$(SUITE_NAME)"
-    $Browser   = "$(BROWSER)"
-    $Headless  = "$(HEADLESS)"
-    $Remote    = "true"
-    $GridUrl   = "$(GRID_URL)"
-    $Threads   = "$(THREADS)"
-
-    $testCaseFilterXml = if ($filter) { "<TestCaseFilter>$filter</TestCaseFilter>" } else { "" }
-
-    $runsettings = @"
-    <?xml version="1.0" encoding="utf-8"?>
-    <RunSettings>
-      <RunConfiguration>
-        <ResultsDirectory>$resultsDir</ResultsDirectory>
-        $testCaseFilterXml
-      </RunConfiguration>
-
-      <TestRunParameters>
-        <Parameter name="testSuiteName" value="$SuiteName" />
-        <Parameter name="browser"      value="$Browser" />
-        <Parameter name="headless"     value="$Headless" />
-        <Parameter name="remote"       value="$Remote" />
-        <Parameter name="gridUrl"      value="$GridUrl" />
-      </TestRunParameters>
-
-      <!-- NUnit3TestAdapter settings -->
-      <NUnit>
-        <NumberOfTestWorkers>$Threads</NumberOfTestWorkers>
-      </NUnit>
-    </RunSettings>
-    "@
-
-        $runsettings | Out-File -FilePath $runsetPath -Encoding utf8
-        Write-Host "Wrote runsettings to $runsetPath"
-        Write-Host '--- dotnet --info ---'
-        & dotnet --info
-
-        # ---------- Run tests with clear diagnostics ----------
-        $args = @(
-          'test',
-          '--configuration','Release',
-          '--no-build',
-          '--verbosity','normal',
-          '--logger','console;verbosity=detailed',
-          '--logger','trx;LogFileName=test_results.trx',
-          '--results-directory',$resultsDir,
-          '--diag',$diagFile,
-          '--settings', $runsetPath,
-          $proj
-        )
-
-        Write-Host "Running: dotnet $($args -join ' ')"
-        & dotnet @args
-        $code = $LASTEXITCODE
-        Write-Host "dotnet test exit code: $code"
-
-        # ---------- Summarize TRX (if produced) ----------
-        $trxFiles = Get-ChildItem -Path $resultsDir -Recurse -Filter *.trx -ErrorAction SilentlyContinue
-        if ($trxFiles) {
-          foreach ($f in $trxFiles) {
-            try {
-              [xml]$x = Get-Content $f.FullName
-              $sum = $x.TestRun.ResultSummary
-              $cnt = $sum.Counters
-              Write-Host ("TRX {0} -> Outcome={1} Total={2} Passed={3} Failed={4} Skipped={5}" -f `
-                $f.Name, $sum.outcome, $cnt.total, $cnt.passed, $cnt.failed, $cnt.notExecuted)
-            } catch {
-              Write-Warning "Could not parse $($f.FullName): $($_.Exception.Message)"
-            }
-          }
-        } else {
-          Write-Warning "No TRX files found under $resultsDir"
-        }
-
-        if (Test-Path $diagFile) {
-          Write-Host '--- Last 200 lines of VSTest diagnostics ---'
-          Get-Content $diagFile -Tail 200 | ForEach-Object { Write-Host $_ }
-        } else {
-          Write-Warning "No VSTest diag file at $diagFile"
-        }
-
-        exit $code
-      displayName: Run Nimbus tests
+    exit $LASTEXITCODE
+  displayName: Run Nimbus tests
 
 
 # Publish TRX so results show in Azure's Tests tab

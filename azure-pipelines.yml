@@ -72,6 +72,8 @@ steps:
 
 # Run tests with multi-category filter (smoke,login -> TestCategory=smoke|TestCategory=login)
 - powershell: |
+    $ErrorActionPreference = 'Stop'
+
     # Build VSTest filter like: TestCategory=a|TestCategory=b
     $raw = "$(GROUPS)".Replace(" ", "")
     $filter = ""
@@ -85,7 +87,7 @@ steps:
     }
     Write-Host "Filter: $filter"
 
-    # Build VSTestCLIRunSettings as ONE semicolon-separated string
+    # One semicolon-separated string for run settings
     $cliSettingsItems = @(
       "NUnit.NumberOfTestWorkers=$(THREADS)"
       "TestRunParameters.Parameter(name=`"testSuiteName`", value=`"$(SUITE_NAME)`")"
@@ -96,17 +98,24 @@ steps:
     )
     $cliSettings = ($cliSettingsItems -join ';')
 
-    $filterArg = @()
-    if ($filter) { $filterArg += "-p:VSTestTestCaseFilter=`"$filter`"" }
+    # Build the dotnet args as an array (safe on Windows PowerShell 5.1)
+    $args = @(
+      'test',
+      '--configuration','Release',
+      '--no-build',
+      '--logger','trx;LogFileName=test_results.trx',
+      '--results-directory','target/test-results',
+      'src/Nimbus.Testing/Nimbus.Testing.csproj',
+      "-p:VSTestCLIRunSettings=$cliSettings"
+    )
 
-    dotnet test `
-      --configuration Release `
-      --no-build `
-      --logger "trx;LogFileName=test_results.trx" `
-      --results-directory target/test-results `
-      src/Nimbus.Testing/Nimbus.Testing.csproj `
-      -p:VSTestCLIRunSettings="$cliSettings" `
-      @filterArg
+    if ($filter) {
+      $args += "-p:VSTestTestCaseFilter=$filter"
+    }
+
+    Write-Host "dotnet $($args -join ' ')"
+    & dotnet @args
+    exit $LASTEXITCODE
   displayName: Run Nimbus tests
 
 # Publish TRX so results show in Azure's Tests tab

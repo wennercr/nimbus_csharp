@@ -72,6 +72,7 @@ steps:
 
 # Run tests with multi-category filter (smoke,login -> TestCategory=smoke|TestCategory=login)
 - powershell: |
+    # Build VSTest filter like: TestCategory=a|TestCategory=b
     $raw = "$(GROUPS)".Replace(" ", "")
     $filter = ""
     if ($raw) {
@@ -86,12 +87,14 @@ steps:
     $filterArg = ""
     if ($filter) { $filterArg = "--filter `"$filter`"" }
 
-    dotnet test src/Nimbus.Testing/Nimbus.Testing.csproj `
+    # IMPORTANT: put options (including --filter) BEFORE the project path
+    dotnet test `
       --configuration Release `
       --no-build `
       --logger "trx;LogFileName=test_results.trx" `
       $filterArg `
       --results-directory target/test-results `
+      src/Nimbus.Testing/Nimbus.Testing.csproj `
       -- `
       "NUnit.NumberOfTestWorkers=$(THREADS)" `
       "TestRunParameters.Parameter(name=`"testSuiteName`", value=`"$(SUITE_NAME)`")" `
@@ -100,6 +103,7 @@ steps:
       "TestRunParameters.Parameter(name=`"remote`", value=`"true`")" `
       "TestRunParameters.Parameter(name=`"gridUrl`", value=`"$(GRID_URL)`")"
   displayName: Run Nimbus tests
+
 
 # Publish TRX so results show in Azure's Tests tab
 - task: PublishTestResults@2

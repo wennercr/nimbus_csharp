@@ -96,7 +96,7 @@ jobs:
 
       - name: Run tests
         run: |
-          # Turn "smoke,login" into "smoke|login" for VSTest filter OR
+          # Turn "smoke,login" into "smoke|login" for VSTest OR
           FILTER_VALUE="${GROUPS}"
           if [ -n "${FILTER_VALUE}" ]; then
             FILTER_VALUE="${FILTER_VALUE//,/|}"
@@ -112,13 +112,14 @@ jobs:
             ${FILTER_ARG} \
             --results-directory target/test-results \
             -- \
-            NUnit.NumberOfTestWorkers=${THREADS} \
-            TestRunParameters.Parameter(name="testSuiteName", value="${SUITE_NAME}") \
-            TestRunParameters.Parameter(name="browser", value="${BROWSER}") \
-            TestRunParameters.Parameter(name="headless", value="${HEADLESS}") \
-            TestRunParameters.Parameter(name="remote", value="true") \
-            TestRunParameters.Parameter(name="gridUrl", value="${GRID_URL}")
+            "NUnit.NumberOfTestWorkers=${THREADS}" \
+            "TestRunParameters.Parameter(name=\"testSuiteName\", value=\"${SUITE_NAME}\")" \
+            "TestRunParameters.Parameter(name=\"browser\", value=\"${BROWSER}\")" \
+            "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
+            "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
+            "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")"
         continue-on-error: true
+
 
 
       - name: Generate Allure report

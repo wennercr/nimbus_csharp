@@ -77,41 +77,56 @@ jobs:
 
           docker rm -f selenoid || true
 
-          # Correct image tags use underscores: chrome_latest, firefox_latest, edge_latest
+          # Correct image names (no vnc:chrome_latest)
           cat > browsers.json <<'JSON'
           {
             "chrome": {
               "default": "latest",
               "versions": {
-                "latest": { "image": "selenoid/vnc:chrome_latest", "port": "4444", "path": "/" }
+                "latest": { "image": "selenoid/chrome:latest", "port": "4444", "path": "/" }
               }
             },
             "firefox": {
               "default": "latest",
               "versions": {
-                "latest": { "image": "selenoid/vnc:firefox_latest", "port": "4444", "path": "/" }
+                "latest": { "image": "selenoid/firefox:latest", "port": "4444", "path": "/" }
               }
             },
             "edge": {
               "default": "latest",
               "versions": {
-                "latest": { "image": "selenoid/vnc:edge_latest", "port": "4444", "path": "/" }
+                "latest": { "image": "selenoid/edge:latest", "port": "4444", "path": "/" }
               }
             }
           }
           JSON
 
-          # --limit controls max parallel sessions across all browsers
+          # Pre-pull only the browser you plan to run (speeds up first session)
+          case "${BROWSER}" in
+            chrome)  docker pull selenoid/chrome:latest  ;;
+            firefox) docker pull selenoid/firefox:latest ;;
+            edge)    docker pull selenoid/edge:latest    ;;
+            *)       docker pull selenoid/chrome:latest  ;;  # default fallback
+          esac
+
+          # --limit controls max parallel sessions
           docker run -d --name selenoid -p 4444:4444 \
             -v $PWD/browsers.json:/etc/selenoid/browsers.json:ro \
             -v /var/run/docker.sock:/var/run/docker.sock \
             aerokube/selenoid:latest-release \
             -limit ${THREADS} -container-network bridge -retry-count 1
 
-          # Wait until Selenoid is up
+          # Wait for Selenoid to be ready
           for i in {1..60}; do
-            curl -sf http://localhost:4444/status >/dev/null && break || sleep 2
+            if curl -sf http://localhost:4444/status >/dev/null; then
+              echo "Selenoid is up"
+              break
+            fi
+            sleep 2
           done
+
+          echo "Selenoid /status:" && curl -s http://localhost:4444/status || true
+
 
       - name: Install Allure CLI (Latest)
         run: |

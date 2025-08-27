@@ -1,0 +1,8 @@
+Remote Grid URL being used: http://localhost:4444
+Test failed: ParallelTest1
+System.Exception : Error creating RemoteWebDriver with Grid URL: http://localhost:4444
+  ----> System.InvalidOperationException : Could not start a new session. No nodes support the capabilities in the request 
+Host info: host: 'e6a49d567e5c', ip: '172.17.0.2'
+Build info: version: '4.35.0', revision: '1c58e5028b'
+System info: os.name: 'Linux', os.arch: 'amd64', os.version: '6.11.0-1018-azure', java.version: '21.0.8'
+Driver info: driver.version: unknown (SessionNotCreated)

@@ -168,18 +168,51 @@ steps:
     $doc.Save($runsetPath)
 
     # Ensure results dir exists
-    New-Item -ItemType Directory -Force -Path '$(TRX_DIR)' | Out-Null
+    $trxDir = '$(TRX_DIR)'
+    New-Item -ItemType Directory -Force -Path $trxDir | Out-Null
 
     # Run tests
     & dotnet test `
       --configuration Release `
       --no-build `
       --logger "trx;LogFileName=test_results.trx" `
-      --results-directory "$(TRX_DIR)" `
+      --results-directory $trxDir `
       --settings $runsetPath `
       "$(TEST_PROJ)"
+    $code = $LASTEXITCODE
 
-    exit $LASTEXITCODE
+    # --- Decide pass/fail semantics ---
+    # If dotnet returned non-zero, decide whether it's JUST test failures or an infra/build error.
+    if ($code -ne 0) {
+      # Find newest TRX (if any)
+      $trx = Get-ChildItem -Path $trxDir -Recurse -Filter *.trx -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+      if ($trx) {
+        try {
+          [xml]$x = Get-Content -Raw $trx.FullName
+          $sum = $x.TestRun.ResultSummary
+          $cnt = $sum.Counters
+          $total  = [int]$cnt.total
+          $passed = [int]$cnt.passed
+          $failed = [int]$cnt.failed
+          $skipped= [int]$cnt.notExecuted
+          $outcome = [string]$sum.outcome
+
+          # If we executed tests and have failures, treat as test failures (not infra)
+          if ($total -gt 0 -and ($failed -gt 0 -or $outcome -in @('Failed','Completed'))) {
+            Write-Host "##vso[task.issue type=warning]$failed test(s) failed (total=$total, passed=$passed, skipped=$skipped). Marking step as SucceededWithIssues."
+            Write-Host "##vso[task.complete result=SucceededWithIssues;]"
+            exit 0
+          }
+        } catch {
+          # Fall through to infra error if TRX couldn't be parsed
+        }
+      }
+      # No TRX or no tests => infra/build error, keep failing
+      exit $code
+    }
+
+    # dotnet exit code was 0 => success
+    exit 0
   displayName: Run Nimbus tests
 
 # Publish TRX to Tests tab

@@ -1,0 +1,4 @@
+Remote Grid URL being used: http://localhost:4444/wd/hub
+Test failed: ParallelTest1
+System.Exception : Error creating RemoteWebDriver with Grid URL: http://localhost:4444/wd/hub
+  ----> System.InvalidOperationException : create container: Error response from daemon: No such image: selenoid/vnc:chrome_latest (SessionNotCreated)

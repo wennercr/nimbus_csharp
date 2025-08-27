@@ -120,7 +120,7 @@ steps:
     $nunit = $runSettings.NUnit
     if (-not $nunit) { $nunit = $doc.CreateElement('NUnit'); $runSettings.AppendChild($nunit) | Out-Null }
 
-    # FIX: accept XmlElement, not XmlDocument
+    # Helper: set/replace <Parameter name="x" value="y" />
     function Set-Param([System.Xml.XmlElement]$root, [string]$name, [string]$value) {
       $node = $root.SelectSingleNode("Parameter[@name='$name']")
       if (-not $node) {
@@ -145,15 +145,24 @@ steps:
     Set-Param $trp 'remote'       $remote
     Set-Param $trp 'gridUrl'      $gridUrl
 
-    $workers = $nunit.NumberOfTestWorkers
-    if (-not $workers) { $workers = $doc.CreateElement('NumberOfTestWorkers'); $nunit.AppendChild($workers) | Out-Null }
-    $workers.InnerText = $threads
+    # Robust: ensure/replace <NumberOfTestWorkers>
+    $workersNode = $nunit.SelectSingleNode('NumberOfTestWorkers')
+    if (-not $workersNode) {
+      $workersNode = $doc.CreateElement('NumberOfTestWorkers')
+      $nunit.AppendChild($workersNode) | Out-Null
+    }
+    $workersNode.InnerText = [string]$threads
 
+    # Robust: ensure/replace/remove <TestCaseFilter>
+    $filterNode = $rc.SelectSingleNode('TestCaseFilter')
     if ($filter) {
-      if ($rc.TestCaseFilter) { $rc.TestCaseFilter = $filter }
-      else { $node = $doc.CreateElement('TestCaseFilter'); $node.InnerText = $filter; $rc.AppendChild($node) | Out-Null }
+      if (-not $filterNode) {
+        $filterNode = $doc.CreateElement('TestCaseFilter')
+        $rc.AppendChild($filterNode) | Out-Null
+      }
+      $filterNode.InnerText = $filter
     } else {
-      if ($rc.TestCaseFilter) { $rc.RemoveChild($rc.TestCaseFilter) | Out-Null }
+      if ($filterNode) { $rc.RemoveChild($filterNode) | Out-Null }
     }
 
     $doc.Save($runsetPath)
@@ -172,7 +181,6 @@ steps:
 
     exit $LASTEXITCODE
   displayName: Run Nimbus tests
-
 
 # Publish TRX to Tests tab
 - task: PublishTestResults@2

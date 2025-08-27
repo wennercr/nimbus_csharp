@@ -45,7 +45,7 @@ jobs:
       HEADLESS: ${{ github.event.inputs.headless || 'true' }}
       GROUPS: ${{ github.event.inputs.groups || 'smoke' }}
       THREADS: ${{ github.event.inputs.threads || '3' }}
-      GRID_URL: "http://localhost:4444"
+      GRID_URL: "http://localhost:4444/wd/hub"
       ALLURE_RESULTS_DIR: src/Nimbus.Testing/bin/Release/net9.0/allure-results
       ALLURE_REPORT_DIR: target/allure-report
 
@@ -71,10 +71,51 @@ jobs:
           rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
           mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
 
-      - name: Start Selenium Grid
+      - name: Start Selenoid (auto-manages browsers, parallel by limit)
         run: |
-          docker run -d -p 4444:4444 --name selenium-grid selenium/standalone-chrome:latest
-          sleep 10
+          set -euxo pipefail
+
+          # Define which browsers Selenoid can launch on demand.
+          # "latest"/"stable" are easy-moving tags; pin exact versions if you prefer.
+          cat > browsers.json <<'JSON'
+          {
+            "chrome": {
+              "default": "latest",
+              "versions": {
+                "latest": { "image": "selenoid/vnc:chrome:latest", "port": "4444", "path": "/" }
+              }
+            },
+            "firefox": {
+              "default": "latest",
+              "versions": {
+                "latest": { "image": "selenoid/vnc:firefox:latest", "port": "4444", "path": "/" }
+              }
+            },
+            "edge": {
+              "default": "latest",
+              "versions": {
+                "latest": { "image": "selenoid/vnc:edge:latest", "port": "4444", "path": "/" }
+              }
+            }
+          }
+          JSON
+
+          # Start Selenoid. --limit = max parallel sessions across all browsers.
+          docker run -d --name selenoid -p 4444:4444 \
+            -v $PWD/browsers.json:/etc/selenoid/browsers.json:ro \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aerokube/selenoid:latest-release \
+            -limit ${THREADS} -container-network bridge -retry-count 1
+
+          # Optional UI (handy for debugging locally; not required for CI)
+          # docker run -d --name selenoid-ui -p 8080:8080 --link selenoid \
+          #   aerokube/selenoid-ui:latest-release --selenoid-uri http://selenoid:4444
+
+          # Wait for Selenoid to be ready
+          for i in {1..60}; do
+            curl -sf http://localhost:4444/status >/dev/null && break || sleep 2
+          done
+
 
       - name: Install Allure CLI (Latest)
         run: |

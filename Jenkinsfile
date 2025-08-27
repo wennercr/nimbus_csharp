@@ -57,41 +57,35 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                 script {
-                    // --- Build the --filter argument (OR across groups) ---
-                    echo "Raw USER_GROUPS input: '${env.USER_GROUPS}'"
-
+                    // Build OR filter like: TestCategory=smoke|TestCategory=api
                     def tokens = []
                     if (env.USER_GROUPS?.trim()) {
-                    tokens = env.USER_GROUPS
-                                .split(/[,\s]+/)          // split by comma or whitespace
-                                .collect { it.trim() }
-                                .findAll { it }           // drop empties
+                    tokens = env.USER_GROUPS.split(/[,\s]+/).collect { it.trim() }.findAll { it }
                     }
 
-                    def filterArg = ''
+                    def filterPreArg = ''
                     if (!tokens.isEmpty()) {
-                    // VSTest (NUnit adapter) maps [Category("x")] => TestCategory=x
-                    def orExpr = tokens.collect { g -> "TestCategory=${g}" }.join('\\|') // escape pipe
-                    // Use single quotes so the shell doesn't treat | as a pipe
-                    filterArg = "--filter '${orExpr}'"
-                    echo "Using VSTest filter: ${orExpr}"
+                    // No need to escape | if we use double quotes here
+                    def orExpr = tokens.collect { g -> "TestCategory=${g}" }.join('|')
+                    filterPreArg = "--filter \"${orExpr}\""
+                    echo "Using VSTest filter (dotnet side): ${orExpr}"
                     } else {
                     echo "No groups provided -> running all tests (no --filter)."
                     }
 
-                    // --- Compose and run the command ---
                     def cmd = """
                     dotnet test \\
                     --configuration Release \\
                     --no-build \\
                     --logger "trx;LogFileName=test_results.trx" \\
-                    -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \\
-                    -- "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \\
-                    ${filterArg}
+                    ${filterPreArg} \\
+                    -- \\
+                    NUnit.NumberOfTestWorkers=${env.USER_THREADS} \\
+                    "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \\
+                    "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \\
+                    "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \\
+                    "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \\
+                    "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")"
                     """.stripIndent().trim()
 
                     echo "Final command:\\n${cmd}"
@@ -99,8 +93,7 @@ pipeline {
                 }
                 }
             }
-        }        
-
+        }
 
 
        stage('Generate Allure Report') {

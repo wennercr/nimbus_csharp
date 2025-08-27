@@ -25,7 +25,6 @@ namespace Nimbus.Testing.Tests
         /// Asserts that the returned response contains the name used in the payload.
         /// </summary>
         [Test]
-        [AllureSuite("Sanity")]
         [Category("api")]
         [Category("api_create")]
         [Description("Verify user creation using ReqRes API")]

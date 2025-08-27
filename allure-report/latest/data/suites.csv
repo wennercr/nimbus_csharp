@@ -1,8 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"Checks that a user can log in using correct email and password.Verify user login with valid credentials
-","2745","ValidLoginShouldSucceed","","Wed Aug 27 17:35:23 UTC 2025","passed","Wed Aug 27 17:35:26 UTC 2025","","Smoke","LoginTest","ValidLoginShouldSucceed"
-"","2671","ParallelTest","","Wed Aug 27 17:35:14 UTC 2025","passed","Wed Aug 27 17:35:16 UTC 2025","","Smoke","LoginTest","ParallelTest"
-"","3612","InvalidLoginShouldDisplayError","","Wed Aug 27 17:35:10 UTC 2025","failed","Wed Aug 27 17:35:14 UTC 2025","","Smoke","LoginTest","InvalidLoginShouldDisplayError"
-"","2301","ParallelTest1","","Wed Aug 27 17:35:16 UTC 2025","passed","Wed Aug 27 17:35:19 UTC 2025","","Smoke","LoginTest","ParallelTest1"
-"","2309","ParallelTest2","","Wed Aug 27 17:35:19 UTC 2025","passed","Wed Aug 27 17:35:21 UTC 2025","","Smoke","LoginTest","ParallelTest2"
-"","2313","ParallelTest3","","Wed Aug 27 17:35:21 UTC 2025","passed","Wed Aug 27 17:35:23 UTC 2025","","Smoke","LoginTest","ParallelTest3"

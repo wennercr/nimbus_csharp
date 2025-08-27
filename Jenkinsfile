@@ -71,7 +71,7 @@ pipeline {
                     def filterArg = ''
                     if (!tokens.isEmpty()) {
                     // VSTest (NUnit adapter) maps [Category("x")] => TestCategory=x
-                    def orExpr = tokens.collect { g -> "TestCategory=${g}" }.join('|')
+                    def orExpr = tokens.collect { g -> "TestCategory=${g}" }.join('\\|') // escape pipe
                     // Use single quotes so the shell doesn't treat | as a pipe
                     filterArg = "--filter '${orExpr}'"
                     echo "Using VSTest filter: ${orExpr}"

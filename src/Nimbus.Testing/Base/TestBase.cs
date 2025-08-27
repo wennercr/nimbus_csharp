@@ -35,10 +35,9 @@ namespace Nimbus.Testing.Base
         /// *before* the test run starts. We still set it here as a best effort (informational).
         /// </summary>
         [OneTimeSetUp]
-        public void BeforeAll()
+        public static void BeforeAll()
         {
-            SetParallelThreadCountBestEffort();
-
+            TestContext.Progress.WriteLine("i am in my beforeAll");
         }
 
         /// <summary>
@@ -46,20 +45,9 @@ namespace Nimbus.Testing.Base
         /// In Java you invoked ReportManager.generateHtmlReport(); in .NET we usually generate Allure HTML in CI.
         /// </summary>
         [OneTimeTearDown]
-        public void AfterAll()
+        public static void AfterAll()
         {
-            try
-            {
-                Console.WriteLine("i am in my afterall");
-                // Local convenience: build HTML after the fixture finishes.
-                // In CI, your workflow still runs the Allure CLI for the full run.
-                // ReportManager.GenerateHtmlReport();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Nimbus] Allure HTML generation failed: {ex.Message}");
-                // Swallow — we don't want report build errors to fail tests locally.
-            }
+            TestContext.Progress.WriteLine("i am in my afterall");
         }
 
         // --------------- Test lifecycle (per test) ----------------
@@ -135,34 +123,6 @@ namespace Nimbus.Testing.Base
         }
 
         // --------------- Helpers ----------------
-
-        /// <summary>
-        /// Best-effort attempt to set NUnit worker threads from config.
-        /// NOTE: Effective control over parallelism is usually done via:
-        ///  - runsettings: &lt;NUnit&gt;&lt;NumberOfTestWorkers&gt;N&lt;/NumberOfTestWorkers&gt;&lt;/NUnit&gt;
-        ///  - or environment variable NUNIT_NUMBER_OF_TEST_WORKERS set *before* test run
-        ///  - or assembly attribute [LevelOfParallelism(N)] in the test project
-        /// </summary>
-        private static void SetParallelThreadCountBestEffort()
-        {
-            var value = ConfigLoader.Get("parallel.threads");
-            var fromCli = Environment.GetEnvironmentVariable("NUNIT_NUMBER_OF_TEST_WORKERS");
-
-            var threads = !string.IsNullOrWhiteSpace(fromCli)
-                        ? fromCli
-                        : (!string.IsNullOrWhiteSpace(value) ? value : null);
-
-            if (!string.IsNullOrWhiteSpace(threads))
-            {
-                // Setting here is *after* discovery; mainly informational.
-                Environment.SetEnvironmentVariable("NUNIT_NUMBER_OF_TEST_WORKERS", threads);
-                Console.WriteLine($"[Nimbus] Parallel threads (best-effort) set to: {threads}");
-            }
-            else
-            {
-                Console.WriteLine("[Nimbus] Parallel threads not specified; using NUnit defaults.");
-            }
-        }
 
         /// <summary>
         /// Attempts to capture and attach a PNG screenshot to Allure.

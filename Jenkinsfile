@@ -53,62 +53,110 @@ pipeline {
             }
         }    
 
-        stage('Run Tests') {
+        stage('Prepare Runsettings') {
             steps {
-                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                script {
-                    echo "Raw USER_GROUPS input: '${env.USER_GROUPS}'"
+                // If your Jenkins agent is Windows with Windows PowerShell:
+                powershell '''
+                $ErrorActionPreference = "Stop"
 
-                    // Build tokens from user input
-                    def tokens = []
-                    if (env.USER_GROUPS?.trim()) {
-                    tokens = env.USER_GROUPS.split(/[,\s]+/)
-                                .collect { it.trim() }
-                                .findAll { it }
-                    }
+                # Build OR filter like: TestCategory=smoke|TestCategory=login
+                $raw = "$env:GROUPS".Replace(" ", "")
+                $parts = $raw -split "," | Where-Object { $_ -ne "" }
+                $filter = ($parts | ForEach-Object { "TestCategory=$_" }) -join "|"
 
-                    // Build a filter that matches common NUnit mappings:
-                    // - [Category("smoke")] can appear as Category or TestCategory
-                    // - [Property("Group","smoke")] appears as Group
-                    // - Some setups expose it as Trait as well
-                    def filterArg = ''
-                    if (!tokens.isEmpty()) {
-                    def parts = []
-                    tokens.each { g ->
-                        parts << "TestCategory=${g}"
-                        parts << "Category=${g}"
-                        parts << "Group=${g}"
-                        parts << "Trait=${g}"
-                    }
-                    // OR them together for “any of these groups”
-                    def orExpr = parts.join('|')
-                    // Quote to prevent shell from treating | as a pipe
-                    filterArg = "--filter '${orExpr}'"
-                    echo "Constructed VSTest filter: ${orExpr}"
-                    } else {
-                    echo "No groups provided -> running all tests (no --filter)."
-                    }
+                $runsetPath = "nimbus.runsettings"
+                if (-not (Test-Path $runsetPath)) { throw "Runsettings not found at $runsetPath" }
 
-                    def cmd = """
-                    dotnet test \\
-                    --configuration Release \\
-                    --no-build \\
-                    --logger "trx;LogFileName=test_results.trx" \\
-                    -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \\
-                    -- "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \\
-                    -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \\
-                    ${filterArg}
-                    """.stripIndent().trim()
+                # Load XML
+                [xml]$doc = Get-Content -Raw $runsetPath
 
-                    echo "Final command:\\n${cmd}"
-                    sh cmd
+                # Ensure nodes
+                $runSettings = $doc.RunSettings
+                if (-not $runSettings) { $runSettings = $doc.CreateElement("RunSettings"); $null = $doc.AppendChild($runSettings) }
+
+                $rc = $runSettings.RunConfiguration
+                if (-not $rc) { $rc = $doc.CreateElement("RunConfiguration"); $null = $runSettings.AppendChild($rc) }
+
+                $trp = $runSettings.TestRunParameters
+                if (-not $trp) { $trp = $doc.CreateElement("TestRunParameters"); $null = $runSettings.AppendChild($trp) }
+
+                $nunit = $runSettings.NUnit
+                if (-not $nunit) { $nunit = $doc.CreateElement("NUnit"); $null = $runSettings.AppendChild($nunit) }
+
+                function Set-Param([System.Xml.XmlElement]$root, [string]$name, [string]$value) {
+                $node = $root.SelectSingleNode("Parameter[@name='$name']")
+                if (-not $node) {
+                    $node = $root.OwnerDocument.CreateElement("Parameter")
+                    $null = $node.SetAttribute("name", $name)
+                    $null = $root.AppendChild($node)
                 }
+                $null = $node.SetAttribute("value", $value)
                 }
+
+                # Map pipeline vars to runsettings
+                $suiteName = "$env:SUITE_NAME"
+                $browser   = "$env:BROWSER"
+                $headless  = "$env:HEADLESS".ToLower()
+                $remote    = "$env:REMOTE"
+                $gridUrl   = "$env:GRID_URL"
+                $threads   = "$env:THREADS"
+
+                Set-Param $trp "testSuiteName" $suiteName
+                Set-Param $trp "browser"       $browser
+                Set-Param $trp "headless"      $headless
+                Set-Param $trp "remote"        $remote
+                Set-Param $trp "gridUrl"       $gridUrl
+
+                # Ensure NumberOfTestWorkers
+                $workersNode = $nunit.SelectSingleNode("NumberOfTestWorkers")
+                if (-not $workersNode) {
+                $workersNode = $doc.CreateElement("NumberOfTestWorkers")
+                $null = $nunit.AppendChild($workersNode)
+                }
+                $workersNode.InnerText = [string]$threads
+
+                # Ensure/replace/remove TestCaseFilter
+                $filterNode = $rc.SelectSingleNode("TestCaseFilter")
+                if ($filter) {
+                if (-not $filterNode) {
+                    $filterNode = $doc.CreateElement("TestCaseFilter")
+                    $null = $rc.AppendChild($filterNode)
+                }
+                $filterNode.InnerText = $filter
+                Write-Host "Using TestCaseFilter: $filter"
+                } else {
+                if ($filterNode) { $null = $rc.RemoveChild($filterNode) }
+                Write-Host "No groups provided; TestCaseFilter removed."
+                }
+
+                $doc.Save($runsetPath)
+
+                # Ensure results dir exists
+                $trxDir = "$env:TRX_DIR"
+                New-Item -ItemType Directory -Force -Path $trxDir | Out-Null
+                '''
             }
         }
+
+    stage('Run Tests') {
+      steps {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+          script {
+            def cmd = """
+              dotnet test \\
+                --configuration Release \\
+                --no-build \\
+                --logger "trx;LogFileName=test_results.trx" \\
+                --results-directory "${env.TRX_DIR}" \\
+                --settings nimbus.runsettings \\
+                "${env.TEST_PROJ}"
+            """.stripIndent().trim()
+            echo "Final command:\\n${cmd}"
+            sh cmd
+          }
+        }
+      }
+    }
 
 
 

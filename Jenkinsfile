@@ -56,7 +56,7 @@ pipeline {
         stage('Prepare Runsettings') {
             steps {
                 // If your Jenkins agent is Windows with Windows PowerShell:
-                powershell '''
+                pwsh '''
                 $ErrorActionPreference = "Stop"
 
                 # Build OR filter like: TestCategory=smoke|TestCategory=login

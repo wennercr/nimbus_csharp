@@ -57,21 +57,33 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     script {
+                        // Build a VSTest filter like: TestCategory=smoke|TestCategory=regression
+                        def filterArg = ''
+                        if (env.USER_GROUPS_RAW?.trim()) {
+                            // Split on comma or whitespace, drop empties, trim each token
+                            def tokens = env.USER_GROUPS_RAW.split(/[,\s]+/).collect { it.trim() }.findAll { it }
+                            if (!tokens.isEmpty()) {
+                                def orExpr = tokens.collect { "TestCategory=${it}" }.join('|')
+                                // Wrap in quotes for the shell
+                                filterArg = "--filter \"${orExpr}\""
+                            }
+                        }
+
                         def cmd = """
-                            dotnet test \
-                            --configuration Release \
-                            --no-build \
-                            --logger "trx;LogFileName=test_results.trx" \
-                            -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \
-                            -- "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \
-                            -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \
-                            --filter "TestCategory=${env.USER_GROUPS}"
+                            dotnet test \\
+                            --configuration Release \\
+                            --no-build \\
+                            --logger "trx;LogFileName=test_results.trx" \\
+                            -- NUnit.NumberOfTestWorkers=${env.USER_THREADS} \\
+                            -- "TestRunParameters.Parameter(name=\\"testSuiteName\\", value=\\"${env.USER_SUITE_NAME}\\")" \\
+                            -- "TestRunParameters.Parameter(name=\\"browser\\", value=\\"${env.USER_BROWSER}\\")" \\
+                            -- "TestRunParameters.Parameter(name=\\"headless\\", value=\\"${env.USER_HEADLESS}\\")" \\
+                            -- "TestRunParameters.Parameter(name=\\"remote\\", value=\\"${env.REMOTE}\\")" \\
+                            -- "TestRunParameters.Parameter(name=\\"gridUrl\\", value=\\"${env.GRID_URL}\\")" \\
+                            ${filterArg}
                         """.stripIndent().trim()
 
-                        echo "Final command: ${cmd}"
+                        echo "Final command:\\n${cmd}"
                         sh cmd
                     }
                 }

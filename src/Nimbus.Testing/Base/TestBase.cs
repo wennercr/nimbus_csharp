@@ -19,6 +19,7 @@ namespace Nimbus.Testing.Base
     /// - (Best-effort) set parallel threads from config
     /// </summary>
     [AllureNUnit]
+    [SetUpFixture]
     public abstract class TestBase
     {
         /// <summary>

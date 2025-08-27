@@ -51,7 +51,7 @@ variables:
   # Paths
   TEST_PROJ: 'src/Nimbus.Testing/Nimbus.Testing.csproj'
   TRX_DIR:   'target/test-results'
-  ALLURE_RESULTS_DIR: 'src/Nimbus.Testing/bin/Release/net9.0/target/allure-results'
+  ALLURE_RESULTS_DIR: 'src/Nimbus.Testing/bin/Release/net9.0/allure-results'
 
 # ---------- Agent pool ----------
 pool:

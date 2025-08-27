@@ -16,9 +16,6 @@
     <None Include="config.properties">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="allureConfig.json">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
   </ItemGroup>
 
   <PropertyGroup>

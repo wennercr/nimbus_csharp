@@ -96,10 +96,19 @@ steps:
 - powershell: |
     $ErrorActionPreference = 'Stop'
 
-    # Clean any old container (ignore error if missing)
+    # Detect Docker named pipe on Windows
+    $candidates = @('\\.\pipe\docker_engine','\\.\pipe\dockerDesktopEngine')
+    $pipe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $pipe) {
+      Write-Error "Could not find a Docker Desktop named pipe. Is Docker Desktop running?"
+    }
+
+    Write-Host "Using Docker pipe: $pipe"
+
+    # Clean any old Selenoid container
     docker rm -f selenoid 2>$null | Out-Null
 
-    # Create browsers.json (UTF-8 no BOM)
+    # Write browsers.json (UTF-8 **no BOM**)
     $browsersJson = @'
     {
       "chrome":  { "default": "latest", "versions": { "latest": { "image":"selenoid/chrome:latest",  "port":"4444", "path":"/" } } },
@@ -107,12 +116,12 @@ steps:
       "edge":    { "default": "latest", "versions": { "latest": { "image":"selenoid/edge:latest",    "port":"4444", "path":"/" } } }
     }
     '@
-
         $browsersPath = Join-Path -Path "$(Build.SourcesDirectory)" -ChildPath "browsers.json"
         $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
         [System.IO.File]::WriteAllText($browsersPath, $browsersJson, $utf8NoBom)
+        Write-Host "browsers.json written to: $browsersPath"
 
-        # Pre-pull the browser image you plan to use (speeds up first session)
+        # Optional: pre-pull only the browser you’re going to use
         switch ("$(BROWSER)") {
           "chrome"  { docker pull selenoid/chrome:latest  | Out-Host }
           "firefox" { docker pull selenoid/firefox:latest | Out-Host }
@@ -120,36 +129,44 @@ steps:
           default   { docker pull selenoid/chrome:latest  | Out-Host }
         }
 
-        # Windows: mount Docker Desktop named pipe and pass -docker-host
-        $pipe = '\\.\pipe\docker_engine'
+        # Build docker-host for Selenoid based on the detected pipe
+        $dockerHost =
+          if ($pipe -like '*docker_engine') { 'npipe:////./pipe/docker_engine' }
+          else { 'npipe:////./pipe/dockerDesktopEngine' }
 
-        docker run -d --name selenoid `
-          -p 4444:4444 `
-          --mount "type=bind,source=$pipe,target=$pipe" `
-          --mount "type=bind,source=$browsersPath,target=/etc/selenoid/browsers.json,readonly" `
-          aerokube/selenoid:latest-release `
-          -limit $(THREADS) `
-          -conf /etc/selenoid/browsers.json `
-          -docker-host "npipe:////./pipe/docker_engine" `
-          -retry-count 1
+        # Run Selenoid. Note: --mount with the named pipe **and** browsers.json.
+        $run = @(
+          'run','-d','--name','selenoid',
+          '-p','4444:4444',
+          '--mount',"type=bind,source=$pipe,target=$pipe",
+          '--mount',"type=bind,source=$browsersPath,target=/etc/selenoid/browsers.json,readonly",
+          'aerokube/selenoid:latest-release',
+          '-limit', "$(THREADS)",
+          '-conf', '/etc/selenoid/browsers.json',
+          '-docker-host', $dockerHost,
+          '-retry-count','1'
+        )
+        Write-Host "docker $($run -join ' ')"
+        docker @run | Out-Host
 
         # Soft readiness check (don’t fail the job here)
         $ready = $false
         foreach ($i in 1..20) {
           try {
-            $r = Invoke-RestMethod -Method GET -Uri "http://localhost:4444/status" -TimeoutSec 2
+            $r = Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' -TimeoutSec 2
             if ($r -and $r.state -eq 'ready') { $ready = $true; break }
           } catch {}
           Start-Sleep -Seconds 2
         }
         if (-not $ready) {
           Write-Warning "Selenoid not yet ready; continuing. Current logs:"
-          docker logs selenoid | Out-Host
-          # continue – dotnet test will retry session creation itself
+          docker logs selenoid 2>&1 | Out-Host
         } else {
-          Write-Host "Selenoid is ready:"; Invoke-RestMethod http://localhost:4444/status | ConvertTo-Json -Depth 6
+          Write-Host "Selenoid is ready:"
+          Invoke-RestMethod http://localhost:4444/status | ConvertTo-Json -Depth 6
         }
   displayName: Start Selenoid (auto browsers, parallel by limit)
+
 
 
 

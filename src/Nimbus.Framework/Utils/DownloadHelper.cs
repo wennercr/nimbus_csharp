@@ -8,48 +8,58 @@ using OpenQA.Selenium.Remote;
 namespace Nimbus.Framework.Utils
 {
     /// <summary>
-    /// Generic download helper that supports BOTH Remote (Selenium Grid Managed Downloads)
-    /// and Local runs. It can:
-    ///  - Start with a clean state (local dir + remote managed store)
-    ///  - Poll for a completed file on the server (no ".crdownload" or dotfiles)
-    ///  - Download each server file only once
-    ///  - Verify local file "size stability" before returning (works for any file type)
+    /// Download helper with three modes:
+    ///  - Local: poll a local downloads folder (unchanged)
+    ///  - Remote + Grid (non-Selenoid): Selenium Managed Downloads (unchanged)
+    ///  - Remote + Selenoid: poll a host-mounted folder (NEW), no Managed Downloads APIs
     /// </summary>
     public class DownloadHelper
     {
         private readonly IWebDriver driver;
         private readonly DirectoryInfo downloadDir;
         private readonly bool isRemote;
+        private readonly bool isSelenoid;
 
-        /// <summary>
-        /// Constructs a per-thread download directory to avoid collisions.
-        /// Mirrors the Java behavior: remote flag pulled from ConfigLoader for parity.
-        /// </summary>
         public DownloadHelper(IWebDriver driver)
         {
             this.driver = driver ?? throw new ArgumentNullException(nameof(driver));
-            this.isRemote = bool.TryParse(ConfigLoader.Get("remote"), out var r) && r;
 
-            if (this.isRemote)
+            this.isRemote = bool.TryParse(ConfigLoader.Get("remote"), out var r) && r;
+            this.isSelenoid = bool.TryParse(ConfigLoader.Get("isSelenoid"), out var s) && s;
+
+            if (isRemote && isSelenoid)
             {
+                // Host-mounted folder (GitHub Actions): passed as selenoidDownloadHostDir
+                var hostDir = ConfigLoader.Get("selenoidDownloadHostDir");
+                if (string.IsNullOrWhiteSpace(hostDir))
+                {
+                    // Graceful default if not provided
+                    hostDir = Path.Combine(Directory.GetCurrentDirectory(), "selenoid-downloads");
+                }
+                downloadDir = new DirectoryInfo(hostDir);
+            }
+            else if (isRemote)
+            {
+                // Remote Grid managed-downloads: keep the per-thread local subdir you had
                 string threadId = System.Threading.Thread.CurrentThread.ManagedThreadId.ToString();
-                this.downloadDir = new DirectoryInfo(
+                downloadDir = new DirectoryInfo(
                     Path.Combine(Directory.GetCurrentDirectory(), "downloads", threadId));
             }
             else
             {
-                this.downloadDir = new DirectoryInfo(
+                // Local runs
+                downloadDir = new DirectoryInfo(
                     Path.Combine(Directory.GetCurrentDirectory(), "downloads"));
             }
         }
 
         /// <summary>
-        /// Clean local folder and, if remote, clear the Grid-managed store for this session.
-        /// Call this BEFORE clicking the element that triggers the download.
+        /// Clean local folder and, if remote+non-Selenoid, clear the Grid-managed store for this session.
+        /// Call BEFORE clicking the element that triggers the download.
         /// </summary>
         public void PrepareDownloadDir()
         {
-            if (isRemote && driver is RemoteWebDriver remote)
+            if (isRemote && !isSelenoid && driver is RemoteWebDriver remote)
             {
                 try
                 {
@@ -61,6 +71,8 @@ namespace Nimbus.Framework.Utils
                     Console.WriteLine("[DownloadHelper] Warning: could not clear remote downloads: " + ex.Message);
                 }
             }
+            // For Selenoid (remote+isSelenoid) we do NOT call Managed Downloads APIs (unsupported).
+            // We only clean the host-mounted folder locally (safe per isolated GHA workspace).
 
             try
             {
@@ -80,29 +92,21 @@ namespace Nimbus.Framework.Utils
 
         /// <summary>
         /// Waits for a file to appear and stabilize, then returns it.
-        /// Works for any file type.
-        /// 
-        /// You can optionally target a specific server-side name or provide a predicate to choose a file.
-        /// If both are null, the helper picks the latest completed non-dot, non-.crdownload entry.
+        /// - Remote + non-Selenoid => Managed Downloads (unchanged)
+        /// - Remote + Selenoid     => Poll the mounted host folder (NEW)
+        /// - Local                 => Poll local folder (unchanged)
         /// </summary>
-        /// <param name="expectedServerFileName">
-        /// Exact server-side name to wait for (e.g. "drylab.pdf"). Optional.
-        /// </param>
-        /// <param name="serverNamePredicate">
-        /// Predicate to select a server file (e.g. n => n.EndsWith(".zip", OrdinalIgnoreCase)). Optional.
-        /// </param>
-        /// <returns>Stable local FileInfo</returns>
         public FileInfo DownloadWhenReady(string? expectedServerFileName = null,
                                           Func<string, bool>? serverNamePredicate = null)
         {
             int waitTimeSeconds = int.Parse(ConfigLoader.Get("wait.timeout.seconds") ?? "45");
             long end = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + waitTimeSeconds * 1000L;
 
-            Console.WriteLine($"[DownloadHelper] Waiting up to {waitTimeSeconds}s (remote={isRemote})");
+            Console.WriteLine($"[DownloadHelper] Waiting up to {waitTimeSeconds}s (remote={isRemote}, selenoid={isSelenoid})");
 
-            if (isRemote && driver is RemoteWebDriver remote)
+            if (isRemote && !isSelenoid && driver is RemoteWebDriver remote)
             {
-                // Track which server files we've already transferred locally to avoid re-download attempts.
+                // === Remote Grid (non-Selenoid) — Managed Downloads path (your current behavior) ===
                 var downloadedOnce = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 string? lastChosen = null;
                 long previousSize = -1;
@@ -114,7 +118,6 @@ namespace Nimbus.Framework.Utils
                         var all = remote.GetDownloadableFiles();
                         Console.WriteLine($"[DownloadHelper] Remote file list: {string.Join(", ", all)}");
 
-                        // Choose a server file:
                         string? serverName = null;
 
                         if (!string.IsNullOrWhiteSpace(expectedServerFileName))
@@ -123,7 +126,6 @@ namespace Nimbus.Framework.Utils
                                 n.Equals(expectedServerFileName, StringComparison.OrdinalIgnoreCase));
                             if (serverName == null)
                             {
-                                // Still waiting for the specific file to show
                                 System.Threading.Thread.Sleep(250);
                                 continue;
                             }
@@ -143,7 +145,6 @@ namespace Nimbus.Framework.Utils
 
                         if (serverName == null)
                         {
-                            // Either only partials/dotfiles exist, or the expected file hasn't appeared yet
                             System.Threading.Thread.Sleep(250);
                             continue;
                         }
@@ -151,7 +152,6 @@ namespace Nimbus.Framework.Utils
                         var localPath = Path.Combine(downloadDir.FullName, serverName);
                         var local = new FileInfo(localPath);
 
-                        // Download only once per server name
                         if (!downloadedOnce.Contains(serverName))
                         {
                             Console.WriteLine($"[DownloadHelper] Downloading '{serverName}' -> {localPath}");
@@ -162,18 +162,15 @@ namespace Nimbus.Framework.Utils
                             }
                             catch (IOException ioex) when (ioex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
                             {
-                                // A previous poll already pulled it — mark as downloaded and move on to stability check
                                 Console.WriteLine("[DownloadHelper] Local file already exists; continuing to stability check.");
                                 downloadedOnce.Add(serverName);
                             }
 
-                            // small flush wait
                             System.Threading.Thread.Sleep(150);
                             local.Refresh();
                         }
                         else
                         {
-                            // Already downloaded; just re-check stability
                             local.Refresh();
                         }
 
@@ -187,7 +184,6 @@ namespace Nimbus.Framework.Utils
                         long size = local.Length;
                         Console.WriteLine($"[DownloadHelper] {local.Name} size={size} (prev={previousSize})");
 
-                        // "Stable twice" rule: same size in two consecutive polls and non-zero
                         if (lastChosen != null &&
                             lastChosen.Equals(serverName, StringComparison.OrdinalIgnoreCase) &&
                             size > 0 && size == previousSize)
@@ -207,11 +203,12 @@ namespace Nimbus.Framework.Utils
                     System.Threading.Thread.Sleep(250);
                 }
 
-                throw new Exception("File was not fully downloaded and stable within timeout (remote).");
+                throw new Exception("File was not fully downloaded and stable within timeout (remote-managed).");
             }
-            else
+
+            // === Selenoid (remote+isSelenoid) OR Local ===
+            // We simply poll the local folder (Selenoid case: it is the host-mounted download dir)
             {
-                // === LOCAL MODE ===
                 long previousSize = -1;
                 string? lastName = null;
 
@@ -225,7 +222,7 @@ namespace Nimbus.Framework.Utils
                         if (!string.IsNullOrWhiteSpace(expectedServerFileName) &&
                             !f.Name.Equals(expectedServerFileName, StringComparison.OrdinalIgnoreCase))
                         {
-                            continue; // user asked for a specific name
+                            continue;
                         }
 
                         if (serverNamePredicate != null && !serverNamePredicate(f.Name))
@@ -250,7 +247,9 @@ namespace Nimbus.Framework.Utils
                     System.Threading.Thread.Sleep(250);
                 }
 
-                throw new Exception("File was not fully downloaded and stable within timeout (local).");
+                throw new Exception(isRemote && isSelenoid
+                    ? "File was not fully downloaded and stable within timeout (selenoid-mounted)."
+                    : "File was not fully downloaded and stable within timeout (local).");
             }
         }
 

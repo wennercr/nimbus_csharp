@@ -75,58 +75,39 @@ jobs:
       - name: Start Selenoid (auto browsers, parallel by limit)
         run: |
           set -euxo pipefail
-          mkdir -p /tmp/selenoid-downloads
+
+          # host-side download dir that we’ll mount
+          mkdir -p "${GITHUB_WORKSPACE}/selenoid-downloads"
           docker rm -f selenoid || true
 
-          # Correct image names (no vnc:chrome_latest)
           cat > browsers.json <<'JSON'
           {
-            "chrome": {
-              "default": "latest",
-              "versions": {
-                "latest": { "image": "selenoid/chrome:latest", "port": "4444", "path": "/" }
-              }
-            },
-            "firefox": {
-              "default": "latest",
-              "versions": {
-                "latest": { "image": "selenoid/firefox:latest", "port": "4444", "path": "/" }
-              }
-            },
-            "edge": {
-              "default": "latest",
-              "versions": {
-                "latest": { "image": "selenoid/edge:latest", "port": "4444", "path": "/" }
-              }
-            }
+            "chrome":  { "default":"latest","versions":{"latest":{"image":"selenoid/chrome:latest","port":"4444","path":"/"}}},
+            "firefox": { "default":"latest","versions":{"latest":{"image":"selenoid/firefox:latest","port":"4444","path":"/"}}},
+            "edge":    { "default":"latest","versions":{"latest":{"image":"selenoid/edge:latest","port":"4444","path":"/"}}}
           }
           JSON
 
-          # Pre-pull only the browser you plan to run (speeds up first session)
           case "${BROWSER}" in
             chrome)  docker pull selenoid/chrome:latest  ;;
             firefox) docker pull selenoid/firefox:latest ;;
             edge)    docker pull selenoid/edge:latest    ;;
-            *)       docker pull selenoid/chrome:latest  ;;  # default fallback
+            *)       docker pull selenoid/chrome:latest  ;;
           esac
 
-          # --limit controls max parallel sessions
           docker run -d --name selenoid -p 4444:4444 \
-            -v $PWD/browsers.json:/etc/selenoid/browsers.json:ro \
+            -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
             -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${GITHUB_WORKSPACE}/selenoid-downloads:/home/selenium/Downloads" \
             aerokube/selenoid:latest-release \
             -limit ${THREADS} -container-network bridge -retry-count 1
 
-          # Wait for Selenoid to be ready
           for i in {1..60}; do
-            if curl -sf http://localhost:4444/status >/dev/null; then
-              echo "Selenoid is up"
-              break
-            fi
+            curl -sf http://localhost:4444/status >/dev/null && { echo "Selenoid is up"; break; }
             sleep 2
           done
+          curl -s http://localhost:4444/status || true
 
-          echo "Selenoid /status:" && curl -s http://localhost:4444/status || true
 
 
       - name: Install Allure CLI (Latest)
@@ -180,7 +161,8 @@ jobs:
             "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
             "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
             "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
-            "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")"
+            "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
+            "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"${GITHUB_WORKSPACE}/selenoid-downloads\")"
         continue-on-error: true
 
 

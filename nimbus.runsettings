@@ -12,6 +12,7 @@
     <Parameter name="headless"     value="true" />
     <Parameter name="remote"       value="true" />
     <Parameter name="gridUrl"      value="http://localhost:4444" />
+    <Parameter name="isSelenoid"      value="false" />
   </TestRunParameters>
 
   <NUnit>

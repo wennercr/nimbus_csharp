@@ -46,6 +46,7 @@ jobs:
       GROUPS: ${{ github.event.inputs.groups || 'smoke' }}
       THREADS: ${{ github.event.inputs.threads || '3' }}
       GRID_URL: "http://localhost:4444/wd/hub"
+      SELENOID: "true"
       ALLURE_RESULTS_DIR: src/Nimbus.Testing/bin/Release/net9.0/allure-results
       ALLURE_REPORT_DIR: target/allure-report
 
@@ -74,7 +75,7 @@ jobs:
       - name: Start Selenoid (auto browsers, parallel by limit)
         run: |
           set -euxo pipefail
-
+          mkdir -p /tmp/selenoid-downloads
           docker rm -f selenoid || true
 
           # Correct image names (no vnc:chrome_latest)
@@ -178,7 +179,8 @@ jobs:
             "TestRunParameters.Parameter(name=\"browser\", value=\"${BROWSER}\")" \
             "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
             "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
-            "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")"
+            "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
+            "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")"
         continue-on-error: true
 
 

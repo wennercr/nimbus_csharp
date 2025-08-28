@@ -251,11 +251,14 @@ namespace Nimbus.Framework.Core
         {
             if (this.remote)
             {
+                var isSelenoid = bool.TryParse(ConfigLoader.Get("isSelenoid"), out var sel) && sel;
+
                 // Remote/Grid: minimal prefs to force "download instead of open" for PDFs.
                 // Do NOT set a directory path in remote mode.
                 switch (options)
                 {
                     case ChromeOptions chrome:
+                        if (isSelenoid) chrome.AddUserProfilePreference("download.default_directory", "/home/selenium/Downloads");
                         // Don’t open the built-in PDF viewer; trigger a download instead
                         chrome.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
                         // Don’t show the “Keep/Discard” bar
@@ -265,12 +268,14 @@ namespace Nimbus.Framework.Core
                         break;
 
                     case EdgeOptions edge:
+                        if (isSelenoid) edge.AddUserProfilePreference("download.default_directory", "/home/selenium/Downloads");
                         edge.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
                         edge.AddUserProfilePreference("download.prompt_for_download", false);
                         edge.AddUserProfilePreference("download.open_pdf_in_system_reader", false);
                         break;
 
                     case FirefoxOptions firefox:
+                        if (isSelenoid) firefox.SetPreference("browser.download.dir", "/home/selenium/Downloads");
                         // Disable built-in PDF viewer so Firefox treats PDF as a download
                         firefox.SetPreference("pdfjs.disabled", true);
                         // Tell Firefox to save PDFs without asking

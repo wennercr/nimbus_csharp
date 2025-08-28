@@ -148,9 +148,6 @@ steps:
         Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' | ConvertTo-Json -Depth 6
   displayName: Start Selenoid (auto browsers, parallel by limit)
 
-
-
-
 # Run tests (edit runsettings XML with your inputs; no fragile quoting)
 - powershell: |
     $ErrorActionPreference = 'Stop'

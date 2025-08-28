@@ -252,7 +252,7 @@ namespace Nimbus.Framework.Core
             if (this.remote)
             {
                 var isSelenoid = bool.TryParse(ConfigLoader.Get("isSelenoid"), out var sel) && sel;
-
+                Console.WriteLine("$$$$$$$$$$$ This is my isSelenoid value: " + isSelenoid);
                 // Remote/Grid: minimal prefs to force "download instead of open" for PDFs.
                 // Do NOT set a directory path in remote mode.
                 switch (options)

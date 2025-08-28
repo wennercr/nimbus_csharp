@@ -37,7 +37,7 @@ parameters:
 - name: gridUrl
   displayName: Selenium Grid URL
   type: string
-  default: http://localhost:4444/wd/hub
+  default: http://localhost:4444/
 
 # ---------- Variables bridged from parameters ----------
 variables:
@@ -75,99 +75,22 @@ steps:
   displayName: Build
 
 # Start Selenium Grid locally (Docker Desktop must be running)
-# - powershell: |
-#     $ErrorActionPreference = 'Stop'
-
-#     $existing = docker ps -aq -f "name=^selenium-grid$"
-#     if ($existing) { docker rm -f selenium-grid | Out-Null }
-
-#     docker run --pull=always -d -p 4444:4444 --shm-size=2g --name selenium-grid selenium/standalone-chrome:latest | Out-Null
-
-#     # readiness check
-#     $ready = $false
-#     1..30 | ForEach-Object {
-#       try { $r = curl.exe -s http://localhost:4444/status | ConvertFrom-Json; if ($r.value.ready) { $ready = $true; break } } catch {}
-#       Start-Sleep 2
-#     }
-#     if (-not $ready) { throw "Selenium Grid not ready at http://localhost:4444/status" }
-#   displayName: Start Selenium Grid
-
-# --- Start Selenoid (auto browsers, parallel by limit) ---
 - powershell: |
     $ErrorActionPreference = 'Stop'
 
-    # Detect Docker named pipe (Desktop must be running)
-    $candidates = @('\\.\pipe\docker_engine','\\.\pipe\dockerDesktopEngine')
-    $pipe = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-    if (-not $pipe) { throw "Could not find Docker Desktop named pipe. Is Docker Desktop running?" }
-    Write-Host "Using Docker pipe: $pipe"
+    $existing = docker ps -aq -f "name=^selenium-grid$"
+    if ($existing) { docker rm -f selenium-grid | Out-Null }
 
-    # Remove existing container ONLY if it exists (avoid non-zero exit)
-    docker container inspect selenoid *> $null
-    if ($LASTEXITCODE -eq 0) {
-      Write-Host "Removing existing 'selenoid' container..."
-      docker rm -f selenoid | Out-Null
-    } else {
-      Write-Host "No existing 'selenoid' container."
+    docker run --pull=always -d -p 4444:4444 --shm-size=2g --name selenium-grid selenium/standalone-chrome:latest | Out-Null
+
+    # readiness check
+    $ready = $false
+    1..30 | ForEach-Object {
+      try { $r = curl.exe -s http://localhost:4444/status | ConvertFrom-Json; if ($r.value.ready) { $ready = $true; break } } catch {}
+      Start-Sleep 2
     }
-
-    # Write browsers.json as UTF-8 no BOM
-    $browsersJson = @'
-    {
-      "chrome":  { "default": "latest", "versions": { "latest": { "image":"selenoid/chrome:latest",  "port":"4444", "path":"/" } } },
-      "firefox": { "default": "latest", "versions": { "latest": { "image":"selenoid/firefox:latest", "port":"4444", "path":"/" } } },
-      "edge":    { "default": "latest", "versions": { "latest": { "image":"selenoid/edge:latest",    "port":"4444", "path":"/" } } }
-    }
-    '@
-        $browsersPath = Join-Path -Path "$(Build.SourcesDirectory)" -ChildPath "browsers.json"
-        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-        [System.IO.File]::WriteAllText($browsersPath, $browsersJson, $utf8NoBom)
-        Write-Host "browsers.json -> $browsersPath"
-
-        # Pre-pull only what you need (speeds up first session)
-        switch ("$(BROWSER)") {
-          "chrome"  { docker pull selenoid/chrome:latest  | Out-Host }
-          "firefox" { docker pull selenoid/firefox:latest | Out-Host }
-          "edge"    { docker pull selenoid/edge:latest    | Out-Host }
-          default   { docker pull selenoid/chrome:latest  | Out-Host }
-        }
-
-        # Build docker-host from detected pipe
-        $dockerHost =
-          if ($pipe -like '*docker_engine') { 'npipe:////./pipe/docker_engine' }
-          else { 'npipe:////./pipe/dockerDesktopEngine' }
-
-        # Run Selenoid (bind named pipe + browsers.json)
-        $args = @(
-          'run','-d','--name','selenoid',
-          '-p','4444:4444',
-          '--mount',"type=bind,source=$pipe,target=$pipe",
-          '--mount',"type=bind,source=$browsersPath,target=/etc/selenoid/browsers.json,readonly",
-          'aerokube/selenoid:latest-release',
-          '-limit', "$(THREADS)",
-          '-conf', '/etc/selenoid/browsers.json',
-          '-docker-host', $dockerHost,
-          '-retry-count','1'
-        )
-        Write-Host "docker $($args -join ' ')"
-        docker @args | Out-Host
-
-        # Soft readiness wait (don’t fail the job if it’s still pulling)
-        $ready = $false
-        foreach ($i in 1..20) {
-          try {
-            $r = Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' -TimeoutSec 2
-            if ($r -and $r.state -eq 'ready') { $ready = $true; break }
-          } catch {}
-          Start-Sleep -Seconds 2
-        }
-        if (-not $ready) {
-          Write-Warning "Selenoid not yet ready; continuing. Current logs:"
-          docker logs selenoid 2>&1 | Out-Host
-        } else {
-          Write-Host "Selenoid is ready:"; Invoke-RestMethod http://localhost:4444/status | ConvertTo-Json -Depth 6
-        }
-  displayName: Start Selenoid (auto browsers, parallel by limit)
+    if (-not $ready) { throw "Selenium Grid not ready at http://localhost:4444/status" }
+  displayName: Start Selenium Grid
 
 # Run tests (edit runsettings XML with your inputs; no fragile quoting)
 - powershell: |

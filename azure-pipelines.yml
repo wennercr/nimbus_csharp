@@ -95,27 +95,37 @@ steps:
 # --- Start Selenoid (auto browsers, parallel by limit) ---
 - powershell: |
     $ErrorActionPreference = 'Stop'
+    $ProgressPreference = 'SilentlyContinue'
 
-    docker rm -f selenoid 2>$null | Out-Null
+    # Remove existing container only if it exists
+    $existing = docker ps -aq -f name=^selenoid$
+    if ($existing) {
+      docker rm -f selenoid | Out-Null
+    } else {
+      Write-Host "No existing 'selenoid' container to remove."
+    }
 
+    # Write browsers.json beside your repo
     $browsersJson = @'
     {
-      "chrome":  { "default": "latest", "versions": { "latest": { "image":"selenoid/chrome:latest",  "port":"4444", "path":"/" } } },
-      "firefox": { "default": "latest", "versions": { "latest": { "image":"selenoid/firefox:latest", "port":"4444", "path":"/" } } },
-      "edge":    { "default": "latest", "versions": { "latest": { "image":"selenoid/edge:latest",    "port":"4444", "path":"/" } } }
+      "chrome":  { "default": "latest", "versions": { "latest": { "image": "selenoid/chrome:latest",  "port": "4444", "path": "/" } } },
+      "firefox": { "default": "latest", "versions": { "latest": { "image": "selenoid/firefox:latest", "port": "4444", "path": "/" } } },
+      "edge":    { "default": "latest", "versions": { "latest": { "image": "selenoid/edge:latest",    "port": "4444", "path": "/" } } }
     }
     '@
 
         $browsersPath = Join-Path -Path "$(Build.SourcesDirectory)" -ChildPath "browsers.json"
-        $browsersJson | Set-Content -Encoding UTF8 -Path $browsersPath
+        $browsersJson | Set-Content -Path $browsersPath -Encoding UTF8
 
+        # Optional: pre-pull only the browser you plan to run
         switch ("$(BROWSER)") {
-          "chrome"  { docker pull selenoid/chrome:latest  | Out-Host }
-          "firefox" { docker pull selenoid/firefox:latest | Out-Host }
-          "edge"    { docker pull selenoid/edge:latest    | Out-Host }
+          'chrome'  { docker pull selenoid/chrome:latest  | Out-Host }
+          'firefox' { docker pull selenoid/firefox:latest | Out-Host }
+          'edge'    { docker pull selenoid/edge:latest    | Out-Host }
           default   { docker pull selenoid/chrome:latest  | Out-Host }
         }
 
+        # Start Selenoid
         docker run -d --name selenoid `
           -p 4444:4444 `
           -v \\.\pipe\docker_engine:\\.\pipe\docker_engine `
@@ -123,18 +133,21 @@ steps:
           aerokube/selenoid:latest-release `
           -limit $(THREADS) -conf /etc/selenoid/browsers.json -retry-count 1
 
-        $ok = $false
-        foreach ($i in 1..60) {
+        # Wait until Selenoid is ready
+        $ready = $false
+        1..60 | ForEach-Object {
           try {
-            $r = Invoke-RestMethod -Method GET -Uri "http://localhost:4444/status" -TimeoutSec 2
-            if ($r?.state -eq "ready") { $ok = $true; break }
-          } catch {}
+            $r = Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' -TimeoutSec 2
+            if ($r -and $r.state -eq 'ready') { $ready = $true; break }
+          } catch { }
           Start-Sleep -Seconds 2
         }
-        if (-not $ok) { throw "Selenoid did not become ready on :4444/status" }
+        if (-not $ready) { throw 'Selenoid did not become ready on :4444/status' }
 
-        Invoke-RestMethod -Method GET -Uri "http://localhost:4444/status" | ConvertTo-Json -Depth 6
+        Write-Host 'Selenoid /status:'
+        Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' | ConvertTo-Json -Depth 6
   displayName: Start Selenoid (auto browsers, parallel by limit)
+
 
 
 

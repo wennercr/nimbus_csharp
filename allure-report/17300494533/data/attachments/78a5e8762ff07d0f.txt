@@ -1,0 +1,14 @@
+allure.cli.path = allure
+appName = TestApp1
+base.url = https://demo.guru99.com/test/newtours/
+browser = chrome
+gridUrl = http://localhost:4444/wd/hub
+headless = true
+isSelenoid = true
+parallel.threads = 3
+proxyAddress = http://localhost:8080
+remote = true
+testSuiteName = SampleSmoke
+useDriverExe = true
+useProxy = false
+wait.timeout.seconds = 45

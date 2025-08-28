@@ -97,11 +97,15 @@ steps:
     $ErrorActionPreference = 'Stop'
     $ProgressPreference = 'SilentlyContinue'
 
-    # Clean any old container (don’t fail if missing)
-    $id = docker ps -aq -f name=^selenoid$
-    if ($id) { docker rm -f selenoid | Out-Null } else { Write-Host "No existing 'selenoid' container." }
+    # Remove any old container (don't fail if missing)
+    $existing = docker ps -aq -f name=^selenoid$
+    if ($existing) {
+      docker rm -f selenoid | Out-Null
+    } else {
+      Write-Host "No existing 'selenoid' container."
+    }
 
-    # Write browsers.json next to your sources
+    # Write browsers.json alongside your sources
     $browsersJson = @'
     {
       "chrome":  { "default": "latest", "versions": { "latest": { "image":"selenoid/chrome:latest",  "port":"4444", "path":"/" } } },
@@ -112,7 +116,7 @@ steps:
         $browsersPath = Join-Path -Path "$(Build.SourcesDirectory)" -ChildPath "browsers.json"
         $browsersJson | Set-Content -Path $browsersPath -Encoding UTF8
 
-        # Optional: pre-pull just the browser you’ll run
+        # Optional: pre-pull the browser image you'll use
         switch ("$(BROWSER)") {
           'chrome'  { docker pull selenoid/chrome:latest  | Out-Host }
           'firefox' { docker pull selenoid/firefox:latest | Out-Host }
@@ -120,7 +124,7 @@ steps:
           default   { docker pull selenoid/chrome:latest  | Out-Host }
         }
 
-        # IMPORTANT: bind the Docker socket for Linux containers (NOT the Windows named pipe)
+        # Start Selenoid
         docker run -d --name selenoid `
           -p 4444:4444 `
           -v "/var/run/docker.sock:/var/run/docker.sock" `
@@ -128,9 +132,9 @@ steps:
           aerokube/selenoid:latest-release `
           -limit $(THREADS) -conf /etc/selenoid/browsers.json -retry-count 1
 
-        # Wait for Selenoid to be ready, print logs if it isn’t
+        # Wait for readiness
         $ready = $false
-        1..60 | ForEach-Object {
+        foreach ($i in 1..60) {
           try {
             $r = Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' -TimeoutSec 2
             if ($r -and $r.state -eq 'ready') { $ready = $true; break }
@@ -139,14 +143,17 @@ steps:
         }
 
         if (-not $ready) {
-          Write-Host '--- Selenoid container logs (for debugging) ---'
-          docker logs selenoid || $true
+          Write-Host '--- docker ps ---'
+          docker ps
+          Write-Host '--- selenoid logs ---'
+          try { docker logs selenoid } catch { Write-Warning "Could not read selenoid logs: $_" }
           throw 'Selenoid did not become ready on :4444/status'
         }
 
         Write-Host 'Selenoid /status:'
         Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' | ConvertTo-Json -Depth 6
   displayName: Start Selenoid (auto browsers, parallel by limit)
+
 
 # Run tests (edit runsettings XML with your inputs; no fragile quoting)
 - powershell: |

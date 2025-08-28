@@ -131,14 +131,14 @@ steps:
           throw "Could not find Docker named pipe. Ensure Docker Desktop (Linux containers) is running."
         }
 
-        # Convert to the format Docker expects in -v on Windows: //./pipe/<name>
+        # Convert to Docker's -v format on Windows: //./pipe/<name>
         $pipeName = Split-Path $pipe -Leaf
-        $pipeVol  = "//./pipe/$pipeName://./pipe/$pipeName"
+        $pipeVol  = "//./pipe/${pipeName}://./pipe/${pipeName}"
 
-        # Start Selenoid (no --mount, only -v as you prefer)
+        # Start Selenoid
         docker run -d --name selenoid `
           -p 4444:4444 `
-          -v $pipeVol `
+          -v "$pipeVol" `
           -v "${browsersPath}:/etc/selenoid/browsers.json:ro" `
           aerokube/selenoid:latest-release `
           -limit $(THREADS) -conf /etc/selenoid/browsers.json -retry-count 1
@@ -157,6 +157,7 @@ steps:
         Write-Host 'Selenoid /status:'
         Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' | ConvertTo-Json -Depth 6
   displayName: Start Selenoid (auto browsers, parallel by limit)
+
 
 
 # Run tests (edit runsettings XML with your inputs; no fragile quoting)

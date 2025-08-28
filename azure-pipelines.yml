@@ -124,8 +124,6 @@ steps:
     Write-Host "Selenium Hub is up with $(THREADS) nodes for $(BROWSER)."
   displayName: Start Selenium Grid (Hub + Nodes)
 
-
-
 # Run tests (edit runsettings XML with your inputs; no fragile quoting)
 - powershell: |
     $ErrorActionPreference = 'Stop'

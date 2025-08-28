@@ -76,15 +76,17 @@ jobs:
         run: |
           set -euxo pipefail
 
-          # host-side download dir that we’ll mount
-          mkdir -p "${GITHUB_WORKSPACE}/selenoid-downloads"
+          # Create the host downloads dir your DownloadHelper expects
+          mkdir -p "$PWD/selenoid-downloads"
+          chmod 0777 "$PWD/selenoid-downloads"   # ensure container can write
+
           docker rm -f selenoid || true
 
           cat > browsers.json <<'JSON'
           {
-            "chrome":  { "default":"latest","versions":{"latest":{"image":"selenoid/chrome:latest","port":"4444","path":"/"}}},
-            "firefox": { "default":"latest","versions":{"latest":{"image":"selenoid/firefox:latest","port":"4444","path":"/"}}},
-            "edge":    { "default":"latest","versions":{"latest":{"image":"selenoid/edge:latest","port":"4444","path":"/"}}}
+            "chrome":  { "default": "latest", "versions": { "latest": { "image": "selenoid/chrome:latest",  "port": "4444", "path": "/" } } },
+            "firefox": { "default": "latest", "versions": { "latest": { "image": "selenoid/firefox:latest", "port": "4444", "path": "/" } } },
+            "edge":    { "default": "latest", "versions": { "latest": { "image": "selenoid/edge:latest",    "port": "4444", "path": "/" } } }
           }
           JSON
 
@@ -95,21 +97,21 @@ jobs:
             *)       docker pull selenoid/chrome:latest  ;;
           esac
 
-          mkdir -p "$GITHUB_WORKSPACE/selenoid-downloads"
-          chmod -R 777 "$GITHUB_WORKSPACE/selenoid-downloads"
-
           docker run -d --name selenoid -p 4444:4444 \
             -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "${GITHUB_WORKSPACE}/selenoid-downloads:/home/selenium/Downloads" \
+            -v "$PWD/selenoid-downloads:/home/selenium/Downloads" \
             aerokube/selenoid:latest-release \
             -limit ${THREADS} -container-network bridge -retry-count 1
 
+          # quick readiness loop
           for i in {1..60}; do
-            curl -sf http://localhost:4444/status >/dev/null && { echo "Selenoid is up"; break; }
+            curl -sf http://localhost:4444/status >/dev/null && break
             sleep 2
           done
-          curl -s http://localhost:4444/status || true
+
+          echo "Selenoid /status:" && curl -s http://localhost:4444/status || true
+
 
 
 
@@ -166,13 +168,20 @@ jobs:
             "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
             "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
             "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"${GITHUB_WORKSPACE}/selenoid-downloads\")"
-
-          echo "Downloads on host:"
-          ls -lah "${GITHUB_WORKSPACE}/selenoid-downloads" || true
         continue-on-error: true
 
+      - name: List downloaded files
+        if: always()
+        run: |
+          echo "Contents of selenoid-downloads:"
+          find "$PWD/selenoid-downloads" -maxdepth 2 -type f -print || true
 
-
+      - name: Upload downloaded files (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenoid-downloads
+          path: selenoid-downloads
 
       - name: Generate Allure report
         if: always()

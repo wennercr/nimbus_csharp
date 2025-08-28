@@ -95,6 +95,9 @@ jobs:
             *)       docker pull selenoid/chrome:latest  ;;
           esac
 
+          mkdir -p "$GITHUB_WORKSPACE/selenoid-downloads"
+          chmod -R 777 "$GITHUB_WORKSPACE/selenoid-downloads"
+
           docker run -d --name selenoid -p 4444:4444 \
             -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
             -v /var/run/docker.sock:/var/run/docker.sock \
@@ -163,6 +166,9 @@ jobs:
             "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
             "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
             "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"${GITHUB_WORKSPACE}/selenoid-downloads\")"
+
+          echo "Downloads on host:"
+          ls -lah "${GITHUB_WORKSPACE}/selenoid-downloads" || true
         continue-on-error: true
 
 

@@ -1,0 +1,550 @@
+Remote Grid URL being used: http://localhost:4444/wd/hub
+[VERIFY] Confirming 'Sample Documents' header is visible.
+[DownloadHelper] Warning: could not clear remote downloads: You must enable downloads in order to work with downloadable files.
+[DownloadHelper] Local download dir ready: /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Testing/bin/Release/net9.0/downloads/15
+[ACTION] Clicking Newsletter PDF link to start download.
+[ACTION] Clicked on the element: By.XPath: //div[@id='newsletter']//a[text()='PDF']
+[WAIT] Waiting for downloaded PDF file to appear.
+[DownloadHelper] Waiting up to 45s (remote=True)
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+[DownloadHelper] Poll exception: OpenQA.Selenium.WebDriverException: You must enable downloads in order to work with downloadable files.
+   at OpenQA.Selenium.Remote.RemoteWebDriver.GetDownloadableFiles()
+   at Nimbus.Framework.Utils.DownloadHelper.DownloadWhenReady(String expectedServerFileName, Func`2 serverNamePredicate) in /home/runner/work/nimbus_csharp/nimbus_csharp/src/Nimbus.Framework/Utils/DownloadHelper.cs:line 114
+Test failed: VerifyDownloadedPdfFromFileExamples
+System.Exception : File was not fully downloaded and stable within timeout (remote).

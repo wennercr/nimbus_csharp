@@ -262,6 +262,8 @@ namespace Nimbus.Framework.Core
                         {
                             chrome.AddUserProfilePreference("download.default_directory", "/home/selenium/Downloads");
                             chrome.AddUserProfilePreference("download.directory_upgrade", true);
+                            chrome.AddUserProfilePreference("profile.default_content_setting_values.automatic_downloads", 1);
+                            chrome.AddUserProfilePreference("download.restrictions", 0);
                         }
                         // Don’t open the built-in PDF viewer; trigger a download instead
                         chrome.AddUserProfilePreference("plugins.always_open_pdf_externally", true);

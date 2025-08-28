@@ -258,7 +258,11 @@ namespace Nimbus.Framework.Core
                 switch (options)
                 {
                     case ChromeOptions chrome:
-                        if (isSelenoid) chrome.AddUserProfilePreference("download.default_directory", "/home/selenium/Downloads");
+                        if (isSelenoid)
+                        {
+                            chrome.AddUserProfilePreference("download.default_directory", "/home/selenium/Downloads");
+                            chrome.AddUserProfilePreference("download.directory_upgrade", true);
+                        }
                         // Don’t open the built-in PDF viewer; trigger a download instead
                         chrome.AddUserProfilePreference("plugins.always_open_pdf_externally", true);
                         // Don’t show the “Keep/Discard” bar
@@ -331,8 +335,13 @@ namespace Nimbus.Framework.Core
         private void AddRemoteCapabilities(DriverOptions options)
         {
             options.AddAdditionalOption("se:name", testSuiteName);
-            // Enable Managed Downloads on the node side
-            options.EnableDownloads = true;
+            var isSelenoid = bool.TryParse(ConfigLoader.Get("isSelenoid"), out var sel) && sel;
+            // IMPORTANT: Only enable Selenium Grid Managed Downloads on real Grid,
+            // not on Selenoid (we rely on FS + bind mount there).
+            if (!isSelenoid)
+            {
+                options.EnableDownloads = true;   // Grid 4 managed downloads
+            }
             options.PlatformName = "linux";
         }
 

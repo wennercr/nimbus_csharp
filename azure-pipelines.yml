@@ -97,11 +97,11 @@ steps:
     $ErrorActionPreference = 'Stop'
     $ProgressPreference = 'SilentlyContinue'
 
-    # Remove existing container if present (don't fail if not found)
-    $existing = docker ps -aq -f name=^selenoid$
-    if ($existing) { docker rm -f selenoid | Out-Null } else { Write-Host "No existing 'selenoid' container." }
+    # Clean any old container (don’t fail if missing)
+    $id = docker ps -aq -f name=^selenoid$
+    if ($id) { docker rm -f selenoid | Out-Null } else { Write-Host "No existing 'selenoid' container." }
 
-    # Write browsers.json into the repo workspace
+    # Write browsers.json next to your sources
     $browsersJson = @'
     {
       "chrome":  { "default": "latest", "versions": { "latest": { "image":"selenoid/chrome:latest",  "port":"4444", "path":"/" } } },
@@ -112,7 +112,7 @@ steps:
         $browsersPath = Join-Path -Path "$(Build.SourcesDirectory)" -ChildPath "browsers.json"
         $browsersJson | Set-Content -Path $browsersPath -Encoding UTF8
 
-        # Optional: pre-pull the browser image to speed up first session
+        # Optional: pre-pull just the browser you’ll run
         switch ("$(BROWSER)") {
           'chrome'  { docker pull selenoid/chrome:latest  | Out-Host }
           'firefox' { docker pull selenoid/firefox:latest | Out-Host }
@@ -120,30 +120,15 @@ steps:
           default   { docker pull selenoid/chrome:latest  | Out-Host }
         }
 
-        # Detect Docker Desktop pipe (varies by version)
-        $pipeCandidates = @(
-          '\\.\pipe\docker_engine',
-          '\\.\pipe\dockerDesktopEngine',
-          '\\.\pipe\dockerDesktopLinuxEngine'
-        )
-        $pipe = $pipeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-        if (-not $pipe) {
-          throw "Could not find Docker named pipe. Ensure Docker Desktop (Linux containers) is running."
-        }
-
-        # Convert to Docker's -v format on Windows: //./pipe/<name>
-        $pipeName = Split-Path $pipe -Leaf
-        $pipeVol  = "//./pipe/${pipeName}://./pipe/${pipeName}"
-
-        # Start Selenoid
+        # IMPORTANT: bind the Docker socket for Linux containers (NOT the Windows named pipe)
         docker run -d --name selenoid `
           -p 4444:4444 `
-          -v "$pipeVol" `
+          -v "/var/run/docker.sock:/var/run/docker.sock" `
           -v "${browsersPath}:/etc/selenoid/browsers.json:ro" `
           aerokube/selenoid:latest-release `
           -limit $(THREADS) -conf /etc/selenoid/browsers.json -retry-count 1
 
-        # Wait for readiness
+        # Wait for Selenoid to be ready, print logs if it isn’t
         $ready = $false
         1..60 | ForEach-Object {
           try {
@@ -152,13 +137,16 @@ steps:
           } catch { }
           Start-Sleep -Seconds 2
         }
-        if (-not $ready) { throw 'Selenoid did not become ready on :4444/status' }
+
+        if (-not $ready) {
+          Write-Host '--- Selenoid container logs (for debugging) ---'
+          docker logs selenoid || $true
+          throw 'Selenoid did not become ready on :4444/status'
+        }
 
         Write-Host 'Selenoid /status:'
         Invoke-RestMethod -Method GET -Uri 'http://localhost:4444/status' | ConvertTo-Json -Depth 6
   displayName: Start Selenoid (auto browsers, parallel by limit)
-
-
 
 # Run tests (edit runsettings XML with your inputs; no fragile quoting)
 - powershell: |

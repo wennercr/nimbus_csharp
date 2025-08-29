@@ -1,0 +1,9 @@
+$$$$$$$$$$$ This is my isSelenoid value: True
+Remote Grid URL being used: http://localhost:4444/wd/hub
+[ACTION] Login with username: 'tutorial' | password: '(hidden)'
+[ACTION] Sent the text: 'tutorial' to the elemenet:By.Name: userName
+[ACTION] Sent the text: 'incorrectPassword' to the elemenet:By.Name: password
+[ACTION] Clicked on the element: By.Name: submit
+[VERIFY] Expecting login error banner to be displayed.
+Test failed: InvalidLoginShouldDisplayError
+failing on purpose for screenshot

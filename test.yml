@@ -1,0 +1,67 @@
+- script: |
+    set -euxo pipefail
+
+    # Host dir for downloads that your test code will poll
+    DOWNLOADS_DIR="$(Build.SourcesDirectory)/selenoid-downloads"
+    mkdir -p "$DOWNLOADS_DIR"
+    chmod 0777 "$DOWNLOADS_DIR"
+
+    docker rm -f selenoid || true
+
+    # Per-session volume mapping (expand $DOWNLOADS_DIR into JSON)
+    cat > browsers.json <<JSON
+    {
+      "chrome": {
+        "default": "latest",
+        "versions": {
+          "latest": {
+            "image": "selenoid/chrome:latest",
+            "port": "4444",
+            "path": "/",
+            "volumes": ["$DOWNLOADS_DIR:/home/selenium/Downloads:rw"]
+          }
+        }
+      },
+      "firefox": {
+        "default": "latest",
+        "versions": {
+          "latest": {
+            "image": "selenoid/firefox:latest",
+            "port": "4444",
+            "path": "/",
+            "volumes": ["$DOWNLOADS_DIR:/home/selenium/Downloads:rw"]
+          }
+        }
+      },
+      "edge": {
+        "default": "latest",
+        "versions": {
+          "latest": {
+            "image": "selenoid/edge:latest",
+            "port": "4444",
+            "path": "/",
+            "volumes": ["$DOWNLOADS_DIR:/home/selenium/Downloads:rw"]
+          }
+        }
+      }
+    }
+    JSON
+
+    # Pull only what we need
+    case "${BROWSER}" in
+      chrome)  docker pull selenoid/chrome:latest  ;;
+      firefox) docker pull selenoid/firefox:latest ;;
+      edge)    docker pull selenoid/edge:latest    ;;
+      *)       docker pull selenoid/chrome:latest  ;;
+    esac
+
+    docker run -d --name selenoid -p 4444:4444 \
+      -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      aerokube/selenoid:latest-release \
+      -limit ${THREADS} -container-network bridge -retry-count 1
+
+    # readiness
+    for i in {1..60}; do curl -sf http://localhost:4444/status >/dev/null && break; sleep 2; done
+    curl -s http://localhost:4444/status || true
+  displayName: Start Selenoid (mounted downloads)

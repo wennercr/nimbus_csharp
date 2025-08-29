@@ -198,28 +198,6 @@ jobs:
             "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"${GITHUB_WORKSPACE}/selenoid-downloads\")"
         continue-on-error: true
 
-
-      - name: Debug Selenoid child containers
-        if: always()
-        run: |
-          echo "Running containers:"
-          docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'
-          echo "Selenoid logs (last 200 lines):"
-          docker logs --tail=200 selenoid || true
-
-      - name: List downloaded files
-        if: always()
-        run: |
-          echo "Contents of selenoid-downloads:"
-          find "$PWD/selenoid-downloads" -maxdepth 2 -type f -print || true
-
-      - name: Upload downloaded files (artifact)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: selenoid-downloads
-          path: selenoid-downloads
-
       - name: Generate Allure report
         if: always()
         run: |

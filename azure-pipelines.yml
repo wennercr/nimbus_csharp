@@ -74,6 +74,46 @@ steps:
 - powershell: dotnet build --configuration Release --no-restore
   displayName: Build
 
+# # Start Selenoid
+# - script: |
+#     set -euxo pipefail
+
+#     # Host download dir that your DownloadHelper will watch
+#     mkdir -p "$(Build.SourcesDirectory)/selenoid-downloads"
+#     chmod 0777 "$(Build.SourcesDirectory)/selenoid-downloads"
+
+#     sudo docker rm -f selenoid || true
+
+#     cat > browsers.json <<'JSON'
+#     {
+#       "chrome":  { "default": "latest", "versions": { "latest": { "image": "selenoid/chrome:latest",  "port": "4444", "path": "/" } } },
+#       "firefox": { "default": "latest", "versions": { "latest": { "image": "selenoid/firefox:latest", "port": "4444", "path": "/" } } },
+#       "edge":    { "default": "latest", "versions": { "latest": { "image": "selenoid/edge:latest",    "port": "4444", "path": "/" } } }
+#     }
+#     JSON
+
+#     case "${BROWSER}" in
+#       chrome)  sudo docker pull selenoid/chrome:latest  ;;
+#       firefox) sudo docker pull selenoid/firefox:latest ;;
+#       edge)    sudo docker pull selenoid/edge:latest    ;;
+#       *)       sudo docker pull selenoid/chrome:latest  ;;
+#     esac
+
+#     sudo docker run -d --name selenoid -p 4444:4444 \
+#       -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
+#       -v /var/run/docker.sock:/var/run/docker.sock \
+#       -v "$(Build.SourcesDirectory)/selenoid-downloads:/home/selenium/Downloads" \
+#       aerokube/selenoid:latest-release \
+#       -limit $(THREADS) -container-network bridge -retry-count 1
+
+#     # quick readiness
+#     for i in {1..60}; do
+#       curl -sf http://localhost:4444/status >/dev/null && break
+#       sleep 2
+#     done
+#     curl -s http://localhost:4444/status || true
+#   displayName: Start Selenoid (limit=$(THREADS))
+
 # Start Selenium Grid locally (Docker Desktop must be running)
 - powershell: |
     $ErrorActionPreference = 'Stop'

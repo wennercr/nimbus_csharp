@@ -76,19 +76,51 @@ jobs:
         run: |
           set -euxo pipefail
 
-          # Create the host downloads dir your DownloadHelper expects
-          mkdir -p "$PWD/selenoid-downloads"
-          chmod 0777 "$PWD/selenoid-downloads"   # ensure container can write
+          # Host dir for downloads
+          DOWNLOADS_DIR="$PWD/selenoid-downloads"
+          mkdir -p "$DOWNLOADS_DIR"
+          chmod 0777 "$DOWNLOADS_DIR"
 
           docker rm -f selenoid || true
 
-          cat > browsers.json <<'JSON'
+          # Build browsers.json with per-session container volume mapping
+          cat > browsers.json <<EOF
           {
-            "chrome":  { "default": "latest", "versions": { "latest": { "image": "selenoid/chrome:latest",  "port": "4444", "path": "/" } } },
-            "firefox": { "default": "latest", "versions": { "latest": { "image": "selenoid/firefox:latest", "port": "4444", "path": "/" } } },
-            "edge":    { "default": "latest", "versions": { "latest": { "image": "selenoid/edge:latest",    "port": "4444", "path": "/" } } }
+            "chrome": {
+              "default": "latest",
+              "versions": {
+                "latest": {
+                  "image": "selenoid/chrome:latest",
+                  "port": "4444",
+                  "path": "/",
+                  "volumes": ["${DOWNLOADS_DIR}:/home/selenium/Downloads:rw"]
+                }
+              }
+            },
+            "firefox": {
+              "default": "latest",
+              "versions": {
+                "latest": {
+                  "image": "selenoid/firefox:latest",
+                  "port": "4444",
+                  "path": "/",
+                  "volumes": ["${DOWNLOADS_DIR}:/home/selenium/Downloads:rw"]
+                }
+              }
+            },
+            "edge": {
+              "default": "latest",
+              "versions": {
+                "latest": {
+                  "image": "selenoid/edge:latest",
+                  "port": "4444",
+                  "path": "/",
+                  "volumes": ["${DOWNLOADS_DIR}:/home/selenium/Downloads:rw"]
+                }
+              }
+            }
           }
-          JSON
+          EOF
 
           case "${BROWSER}" in
             chrome)  docker pull selenoid/chrome:latest  ;;
@@ -100,7 +132,6 @@ jobs:
           docker run -d --name selenoid -p 4444:4444 \
             -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$PWD/selenoid-downloads:/home/selenium/Downloads" \
             aerokube/selenoid:latest-release \
             -limit ${THREADS} -container-network bridge -retry-count 1
 
@@ -111,9 +142,6 @@ jobs:
           done
 
           echo "Selenoid /status:" && curl -s http://localhost:4444/status || true
-
-
-
 
       - name: Install Allure CLI (Latest)
         run: |
@@ -169,6 +197,15 @@ jobs:
             "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
             "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"${GITHUB_WORKSPACE}/selenoid-downloads\")"
         continue-on-error: true
+
+
+      - name: Debug Selenoid child containers
+        if: always()
+        run: |
+          echo "Running containers:"
+          docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'
+          echo "Selenoid logs (last 200 lines):"
+          docker logs --tail=200 selenoid || true
 
       - name: List downloaded files
         if: always()

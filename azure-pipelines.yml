@@ -265,6 +265,7 @@ steps:
     reportName: "Nimbus – $(Build.BuildNumber)"
 
 # Cleanup Selenium container
-- powershell: docker rm -f selenium-grid 2>$null
+- powershell: |
+    try { docker rm -f selenium-grid | Out-Null } catch { Write-Host "Already gone (ok)." }
   displayName: Stop Selenium Grid
   condition: always()

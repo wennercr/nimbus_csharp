@@ -1,0 +1,10 @@
+$$$$$$$$$$$ This is my isSelenoid value: True
+Remote Grid URL being used: http://localhost:4444/wd/hub
+[VERIFY] Confirming 'Sample Documents' header is visible.
+[DownloadHelper] Local download dir ready: /home/runner/work/nimbus_csharp/nimbus_csharp/selenoid-downloads
+[ACTION] Clicking Newsletter PDF link to start download.
+[ACTION] Clicked on the element: By.XPath: //div[@id='newsletter']//a[text()='PDF']
+[WAIT] Waiting for downloaded PDF file to appear.
+[DownloadHelper] Waiting up to 90s (remote=True, selenoid=True)
+Test failed: VerifyDownloadedPdfFromFileExamples
+System.IO.FileNotFoundException : Could not find file '/home/runner/work/nimbus_csharp/nimbus_csharp/selenoid-downloads/.com.google.Chrome.bxulbZ'.

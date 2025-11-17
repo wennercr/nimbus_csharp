@@ -1,4 +1,3 @@
-// File: src/Nimbus.Framework/Config/ConfigLoader.cs
 using System.Collections.ObjectModel;
 using System.Text;
 using NUnit.Framework; // Needed for TestContext.Parameters

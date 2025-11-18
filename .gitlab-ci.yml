@@ -231,16 +231,16 @@ report:
       fi
 
       cat > "${REPORT_ROOT}/index.html" <<HTML
-<!doctype html><meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=./latest/?t=${CI_PIPELINE_ID}">
-<title>Allure Report</title>
-<a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
-HTML
+      <!doctype html><meta charset="utf-8">
+      <meta http-equiv="refresh" content="0; url=./latest/?t=${CI_PIPELINE_ID}">
+      <title>Allure Report</title>
+      <a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
+      HTML
 
-      touch "${REPORT_ROOT}/.nojekyll"
+            touch "${REPORT_ROOT}/.nojekyll"
 
-      echo "Publish dir contents (2 levels):"
-      find "${REPORT_ROOT}" -maxdepth 2 -print | sort
+            echo "Publish dir contents (2 levels):"
+            find "${REPORT_ROOT}" -maxdepth 2 -print | sort
 
   artifacts:
     when: always

@@ -34,7 +34,7 @@ test:
     - rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
     - mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
 
-    # Build VSTest filter like: TestCategory=a|TestCategory=b|TestCategory=c
+        # Build VSTest filter like: TestCategory=a|TestCategory=b|TestCategory=c
     - |
       RAW="${GROUPS}"
       RAW="${RAW// /}"
@@ -50,13 +50,9 @@ test:
           fi
         done
       fi
-      echo "Computed filter: ${FILTER:-<none>}" > filter.txt
 
-    - dotnet restore
-    - dotnet build --configuration Release --no-restore
+      echo "Computed filter: ${FILTER:-<none>}"
 
-    - |
-      FILTER=$(cat filter.txt)
       dotnet test \
         --configuration Release \
         --no-build \

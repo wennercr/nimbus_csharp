@@ -41,20 +41,21 @@ test:
       echo "Using GRID_URL=${GRID_URL}"
 
       echo "Waiting for ${BROWSER} container to be ready..."
-      for i in {1..60}; do
+      for i in {1..30}; do
         STATUS_URL="${GRID_URL%/wd/hub}/status"
         STATUS_RAW=$(curl -s "${STATUS_URL}" || true)
         echo "Raw status from ${STATUS_URL}: ${STATUS_RAW}"
-        READY=$(echo "${STATUS_RAW}" | grep -o '"ready":[^,}]*' || true)
-        echo "Parsed ready flag: ${READY:-<none>}"
 
-        if [ "${READY}" = '"ready":true' ]; then
+        # Check for "ready": true with optional spaces
+        if echo "${STATUS_RAW}" | grep -q '"ready"[[:space:]]*:[[:space:]]*true'; then
           echo "Selenium ${BROWSER} standalone is ready."
           break
         fi
 
+        echo "Selenium ${BROWSER} standalone not ready yet (attempt ${i}/60)."
         sleep 2
-        if [ $i -eq 60 ]; then
+
+        if [ "$i" -eq 30 ]; then
           echo "Selenium ${BROWSER} standalone did not become ready in time."
           exit 1
         fi

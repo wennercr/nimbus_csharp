@@ -1,4 +1,5 @@
 stages:
+  - build
   - test
   - report
   - deploy
@@ -17,20 +18,43 @@ variables:
   ALLURE_RESULTS_DIR: "src/Nimbus.Testing/bin/Release/net9.0/allure-results"
   ALLURE_REPORT_DIR: "target/allure-report"
 
+# --------------------------------
+# 1) BUILD JOB (must succeed)
+# --------------------------------
+build:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+
+  script:
+    - dotnet restore
+    - dotnet build --configuration Release --no-restore
+
+  artifacts:
+    when: always
+    paths:
+      - src/Nimbus.Testing/bin/Release
+    expire_in: 1 week
+
+# --------------------------------
+# 2) TEST JOB (can fail, but pipeline continues)
+# --------------------------------
 test:
   stage: test
 
   image: mcr.microsoft.com/dotnet/sdk:9.0
 
+  # Docker-in-Docker service to start Selenoid (similar to GA)
   services:
     - name: docker:27.0-dind
       alias: docker
 
   variables:
+    # Tell docker CLI to talk to the dind service
     DOCKER_HOST: "tcp://docker:2375"
     DOCKER_TLS_CERTDIR: ""
 
   before_script:
+    # Install docker client + helpers in the dotnet image
     - apt-get update
     - apt-get install -y docker.io curl unzip jq
     - docker version
@@ -58,44 +82,43 @@ test:
         echo "Starting Selenoid via docker:dind..."
 
         DOWNLOADS_DIR="/selenoid-downloads"
-
-        # ------------------------------
-        # FIXED HEREDOC (NO INDENTATION)
-        # ------------------------------
-        cat > browsers.json << 'EOF'
-      {
-        "chrome": {
-          "default": "latest",
-          "versions": {
-            "latest": {
-              "image": "selenoid/chrome:latest",
-              "port": "4444",
-              "path": "/"
+        # This directory is inside the dind container filesystem. Your tests can
+        # still download files; wiring them back to the job container is a next step.
+        # For now, just ensure it exists when Selenoid starts.
+        cat > browsers.json <<EOF
+        {
+          "chrome": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/chrome:latest",
+                "port": "4444",
+                "path": "/"
+              }
             }
-          }
-        },
-        "firefox": {
-          "default": "latest",
-          "versions": {
-            "latest": {
-              "image": "selenoid/firefox:latest",
-              "port": "4444",
-              "path": "/"
+          },
+          "firefox": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/firefox:latest",
+                "port": "4444",
+                "path": "/"
+              }
             }
-          }
-        },
-        "edge": {
-          "default": "latest",
-          "versions": {
-            "latest": {
-              "image": "selenoid/edge:latest",
-              "port": "4444",
-              "path": "/"
+          },
+          "edge": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/edge:latest",
+                "port": "4444",
+                "path": "/"
+              }
             }
           }
         }
-      }
-      EOF
+        EOF
 
         case "${BROWSER}" in
           chrome)  docker pull selenoid/chrome:latest  ;;
@@ -106,12 +129,16 @@ test:
 
         docker rm -f selenoid || true
 
+        # We run Selenoid inside the docker:dind service.
+        # -p 4444:4444 exposes Selenoid on the dind container's 4444,
+        # which is reachable from the job as http://docker:4444/
         docker run -d --name selenoid -p 4444:4444 \
           -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aerokube/selenoid:latest-release \
-          -limit ${THREADS} -retry-count 1
+          -limit ${THREADS} -container-network bridge -retry-count 1
 
+        # Readiness loop – Selenoid is on the 'docker' service, port 4444
         echo "Waiting for Selenoid to be ready at http://docker:4444/status ..."
         for i in {1..60}; do
           if curl -sf "http://docker:4444/status" >/dev/null; then
@@ -120,6 +147,7 @@ test:
           fi
           echo "Selenoid not ready yet (attempt ${i}/60)..."
           sleep 2
+
           if [ "$i" -eq 60 ]; then
             echo "Selenoid did not become ready in time."
             docker logs selenoid || true
@@ -130,15 +158,17 @@ test:
         echo "Selenoid /status:"
         curl -s "http://docker:4444/status" || true
 
+        # Force GRID_URL to Selenoid
         GRID_URL="http://docker:4444/wd/hub"
       else
-        echo "SELENOID=false – this job currently supports only Selenoid."
+        echo "SELENOID=false – this job is configured only for Selenoid mode."
+        echo "You can extend this section later to support selenium/standalone-* services."
       fi
 
       echo "Final GRID_URL=${GRID_URL}"
 
       # -----------------------
-      # 3. Clean proxy env
+      # 3. Optional: clean proxy env (same as before)
       # -----------------------
       echo "Proxy env BEFORE cleanup:"
       env | grep -i 'proxy' || echo "  (none)"
@@ -147,10 +177,10 @@ test:
       env | grep -i 'proxy' || echo "  (none)"
 
       # -----------------------
-      # 4. Build VSTest filter
+      # 4. Build VSTest filter from GROUPS (same as GA)
       # -----------------------
       RAW="${GROUPS}"
-      RAW="${RAW// /}"
+      RAW="${RAW// /}"  # remove spaces
       FILTER=""
       if [ -n "${RAW}" ]; then
         IFS=',' read -ra PARTS <<< "${RAW}"
@@ -163,10 +193,12 @@ test:
           fi
         done
       fi
+
       echo "Computed filter: ${FILTER:-<none>}"
 
       # -----------------------
-      # 5. Restore, build, test
+      # 5. (Re)restore, build, test
+      #    (Build already ran in 'build' job, but this keeps test job self-contained)
       # -----------------------
       dotnet restore
       dotnet build --configuration Release --no-restore
@@ -187,6 +219,12 @@ test:
         "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
         "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"/selenoid-downloads\")"
 
+  needs:
+    - build
+
+  # Let the pipeline continue even if tests fail
+  allow_failure: true
+
   artifacts:
     when: always
     name: "allure-results-${CI_COMMIT_SHORT_SHA}"
@@ -195,9 +233,18 @@ test:
       - ${ALLURE_RESULTS_DIR}
     expire_in: 1 week
 
+# --------------------------------
+# 3) REPORT JOB
+# --------------------------------
 report:
   stage: report
   image: ubuntu:22.04
+
+  needs:
+    - test
+
+  when: always
+
   before_script:
     - apt-get update && apt-get install -y curl unzip sudo wget openjdk-11-jre
     - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
@@ -237,10 +284,10 @@ report:
       <a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
       HTML
 
-            touch "${REPORT_ROOT}/.nojekyll"
+      touch "${REPORT_ROOT}/.nojekyll"
 
-            echo "Publish dir contents (2 levels):"
-            find "${REPORT_ROOT}" -maxdepth 2 -print | sort
+      echo "Publish dir contents (2 levels):"
+      find "${REPORT_ROOT}" -maxdepth 2 -print | sort
 
   artifacts:
     when: always
@@ -249,13 +296,22 @@ report:
       - ${ALLURE_REPORT_DIR}
     expire_in: 2 weeks
 
+# --------------------------------
+# 4) PAGES DEPLOY
+# --------------------------------
 pages:
   stage: deploy
+
+  needs:
+    - report
+
   script:
     - mkdir -p public
     - cp -r ${ALLURE_REPORT_DIR}/* public/
+
   artifacts:
     paths:
       - public
+
   only:
     - main

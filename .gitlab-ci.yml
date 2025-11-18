@@ -80,7 +80,7 @@ report:
   stage: report
   image: ubuntu:22.04
   before_script:
-    - apt-get update && apt-get install -y curl unzip sudo
+    - apt-get update && apt-get install -y curl unzip sudo wget
     - |
       LATEST_VERSION=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
       echo "Latest Allure version: $LATEST_VERSION"

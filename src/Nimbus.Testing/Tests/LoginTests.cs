@@ -18,7 +18,7 @@ namespace Nimbus.Testing.Tests
     /// </summary>
     [TestFixture]
     [AllureSuite("Smoke")]
-    [Category("smoke")]
+    [Category("Smoke")]
     public class LoginTest : TestBase
     {
         /// <summary>

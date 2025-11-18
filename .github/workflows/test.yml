@@ -1,267 +1,270 @@
-name: Run Tests and Publish Allure Report (.NET)
+stages:
+  - test
+  - report
+  - deploy
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-    inputs:
-      suite_name:
-        description: 'Test suite name'
-        required: true
-        default: 'SampleSmoke'
-      browser:
-        description: 'Browser to use'
-        required: true
-        default: 'chrome'
-      headless:
-        description: 'Run in headless mode?'
-        required: true
-        default: 'true'
-      groups:
-        description: 'Comma-separated test groups (optional)'
-        required: false
-        default: ''
-      threads:
-        description: '# of parallel threads'
-        required: true
-        default: '3'
+variables:
+  SUITE_NAME: "SampleSmoke"
+  BROWSER: "chrome"     # chrome | firefox | edge
+  HEADLESS: "true"
+  GROUPS: "Smoke"
+  THREADS: "3"
 
-permissions:
-  contents: write
+  # We are using Selenoid here by default
+  SELENOID: "true"
+  GRID_URL: "http://docker:4444/wd/hub"
 
-concurrency:
-  group: gha-tests-${{ github.ref }}
-  cancel-in-progress: false
+  ALLURE_RESULTS_DIR: "src/Nimbus.Testing/bin/Release/net9.0/allure-results"
+  ALLURE_REPORT_DIR: "target/allure-report"
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+test:
+  stage: test
 
-    env:
-      SUITE_NAME: ${{ github.event.inputs.suite_name || 'SampleSmoke' }}
-      BROWSER: ${{ github.event.inputs.browser || 'chrome' }}
-      HEADLESS: ${{ github.event.inputs.headless || 'true' }}
-      GROUPS: ${{ github.event.inputs.groups || 'smoke' }}
-      THREADS: ${{ github.event.inputs.threads || '3' }}
-      GRID_URL: "http://localhost:4444/wd/hub"
-      SELENOID: "true"
-      ALLURE_RESULTS_DIR: src/Nimbus.Testing/bin/Release/net9.0/allure-results
-      ALLURE_REPORT_DIR: target/allure-report
+  image: mcr.microsoft.com/dotnet/sdk:9.0
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  # Docker-in-Docker service to start Selenoid (similar to GA)
+  services:
+    - name: docker:27.0-dind
+      alias: docker
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'
+  variables:
+    # Tell docker CLI to talk to the dind service
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
+  before_script:
+    # Install docker client + helpers in the dotnet image
+    - apt-get update
+    - apt-get install -y docker.io curl unzip jq
+    - docker version
 
-      - name: Prepare Allure directories
-        run: |
-          rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
-          mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
+  script:
+    - |
+      echo "SUITE_NAME=${SUITE_NAME}"
+      echo "BROWSER=${BROWSER}"
+      echo "HEADLESS=${HEADLESS}"
+      echo "GROUPS=${GROUPS}"
+      echo "THREADS=${THREADS}"
+      echo "SELENOID=${SELENOID}"
+      echo "Initial GRID_URL=${GRID_URL}"
 
-      - name: Start Selenoid (auto browsers, parallel by limit)
-        run: |
-          set -euxo pipefail
+      # -----------------------
+      # 1. Prepare Allure dirs
+      # -----------------------
+      rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
+      mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
 
-          # Host dir for downloads
-          DOWNLOADS_DIR="$PWD/selenoid-downloads"
-          mkdir -p "$DOWNLOADS_DIR"
-          chmod 0777 "$DOWNLOADS_DIR"
+      # -----------------------
+      # 2. Start Selenoid
+      # -----------------------
+      if [ "${SELENOID}" = "true" ]; then
+        echo "Starting Selenoid via docker:dind..."
 
-          docker rm -f selenoid || true
-
-          # Build browsers.json with per-session container volume mapping
-          cat > browsers.json <<EOF
-          {
-            "chrome": {
-              "default": "latest",
-              "versions": {
-                "latest": {
-                  "image": "selenoid/chrome:latest",
-                  "port": "4444",
-                  "path": "/",
-                  "volumes": ["${DOWNLOADS_DIR}:/home/selenium/Downloads:rw"]
-                }
+        DOWNLOADS_DIR="/selenoid-downloads"
+        # This directory is inside the dind container filesystem. Your tests can
+        # still download files; wiring them back to the job container is a next step.
+        # For now, just ensure it exists when Selenoid starts.
+        cat > browsers.json <<EOF
+        {
+          "chrome": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/chrome:latest",
+                "port": "4444",
+                "path": "/"
               }
-            },
-            "firefox": {
-              "default": "latest",
-              "versions": {
-                "latest": {
-                  "image": "selenoid/firefox:latest",
-                  "port": "4444",
-                  "path": "/",
-                  "volumes": ["${DOWNLOADS_DIR}:/home/selenium/Downloads:rw"]
-                }
+            }
+          },
+          "firefox": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/firefox:latest",
+                "port": "4444",
+                "path": "/"
               }
-            },
-            "edge": {
-              "default": "latest",
-              "versions": {
-                "latest": {
-                  "image": "selenoid/edge:latest",
-                  "port": "4444",
-                  "path": "/",
-                  "volumes": ["${DOWNLOADS_DIR}:/home/selenium/Downloads:rw"]
-                }
+            }
+          },
+          "edge": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/edge:latest",
+                "port": "4444",
+                "path": "/"
               }
             }
           }
-          EOF
+        }
+        EOF
 
-          case "${BROWSER}" in
-            chrome)  docker pull selenoid/chrome:latest  ;;
-            firefox) docker pull selenoid/firefox:latest ;;
-            edge)    docker pull selenoid/edge:latest    ;;
-            *)       docker pull selenoid/chrome:latest  ;;
-          esac
+        case "${BROWSER}" in
+          chrome)  docker pull selenoid/chrome:latest  ;;
+          firefox) docker pull selenoid/firefox:latest ;;
+          edge)    docker pull selenoid/edge:latest    ;;
+          *)       docker pull selenoid/chrome:latest  ;;
+        esac
 
-          docker run -d --name selenoid -p 4444:4444 \
-            -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            aerokube/selenoid:latest-release \
-            -limit ${THREADS} -container-network bridge -retry-count 1
+        docker rm -f selenoid || true
 
-          # quick readiness loop
-          for i in {1..60}; do
-            curl -sf http://localhost:4444/status >/dev/null && break
-            sleep 2
-          done
+        # We run Selenoid inside the docker:dind service.
+        # -p 4444:4444 exposes Selenoid on the dind container's 4444,
+        # which is reachable from the job as http://docker:4444/
+        docker run -d --name selenoid -p 4444:4444 \
+          -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aerokube/selenoid:latest-release \
+          -limit ${THREADS} -container-network bridge -retry-count 1
 
-          echo "Selenoid /status:" && curl -s http://localhost:4444/status || true
-
-      - name: Install Allure CLI (Latest)
-        run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-          echo "Latest Allure version: $LATEST_VERSION"
-
-          wget "https://github.com/allure-framework/allure2/releases/download/$LATEST_VERSION/allure-$LATEST_VERSION.zip" -O allure.zip
-          unzip allure.zip -d allure-cli
-          sudo mv "allure-cli/allure-$LATEST_VERSION" /opt/allure
-          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
-
-          allure --version
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build solution
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Run tests
-        run: |
-          # Build VSTest filter like: TestCategory=a|TestCategory=b|TestCategory=c
-          RAW="${GROUPS}"
-          RAW="${RAW// /}"  # remove spaces
-          FILTER=""
-          if [ -n "${RAW}" ]; then
-            IFS=',' read -ra PARTS <<< "${RAW}"
-            for p in "${PARTS[@]}"; do
-              [ -z "$p" ] && continue
-              if [ -z "${FILTER}" ]; then
-                FILTER="TestCategory=${p}"
-              else
-                FILTER="${FILTER}|TestCategory=${p}"
-              fi
-            done
+        # Readiness loop – Selenoid is on the 'docker' service, port 4444
+        echo "Waiting for Selenoid to be ready at http://docker:4444/status ..."
+        for i in {1..60}; do
+          if curl -sf "http://docker:4444/status" >/dev/null; then
+            echo "Selenoid is ready."
+            break
           fi
+          echo "Selenoid not ready yet (attempt ${i}/60)..."
+          sleep 2
 
-          echo "Computed filter: ${FILTER:-<none>}"
-
-          dotnet test \
-            --configuration Release \
-            --no-build \
-            --logger "trx;LogFileName=test_results.trx" \
-            ${FILTER:+--filter "${FILTER}"} \
-            --results-directory target/test-results \
-            -- \
-            "NUnit.NumberOfTestWorkers=${THREADS}" \
-            "TestRunParameters.Parameter(name=\"testSuiteName\", value=\"${SUITE_NAME}\")" \
-            "TestRunParameters.Parameter(name=\"browser\", value=\"${BROWSER}\")" \
-            "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
-            "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
-            "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
-            "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
-            "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"${GITHUB_WORKSPACE}/selenoid-downloads\")"
-        continue-on-error: true
-
-      - name: Generate Allure report
-        if: always()
-        run: |
-          set -euo pipefail
-          RUN_ID="${{ github.run_id }}"
-          RESULTS="${ALLURE_RESULTS_DIR}"
-          REPORT_ROOT="${ALLURE_REPORT_DIR}"
-          VERSIONED_DIR="${REPORT_ROOT}/${RUN_ID}"
-          LATEST_DIR="${REPORT_ROOT}/latest"
-
-          allure generate "${RESULTS}" -o "${VERSIONED_DIR}" --clean
-
-          rm -rf "${LATEST_DIR}"
-          mkdir -p "${REPORT_ROOT}"
-          cp -r "${VERSIONED_DIR}" "${LATEST_DIR}"
-
-          if [ -f "${LATEST_DIR}/index.html" ]; then
-            sed -i "s#app.js#app.js?v=${RUN_ID}#g" "${LATEST_DIR}/index.html"
-            sed -i "s#styles.css#styles.css?v=${RUN_ID}#g" "${LATEST_DIR}/index.html"
-            sed -i "1i <meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\"/>" "${LATEST_DIR}/index.html"
+          if [ "$i" -eq 60 ]; then
+            echo "Selenoid did not become ready in time."
+            docker logs selenoid || true
+            exit 1
           fi
+        done
 
-          cat > "${REPORT_ROOT}/index.html" <<HTML
-          <!doctype html><meta charset="utf-8">
-          <meta http-equiv="refresh" content="0; url=./latest/?t=${RUN_ID}">
-          <title>Allure Report</title>
-          <a href="./latest/?t=${RUN_ID}">Go to latest report</a>
-          HTML
+        echo "Selenoid /status:"
+        curl -s "http://docker:4444/status" || true
 
-          touch "${REPORT_ROOT}/.nojekyll"
+        # Force GRID_URL to Selenoid
+        GRID_URL="http://docker:4444/wd/hub"
+      else
+        echo "SELENOID=false – this job is configured only for Selenoid mode."
+        echo "You can extend this section later to support selenium/standalone-* services."
+      fi
 
-          echo "Publish dir contents (2 levels):"
-          find "${REPORT_ROOT}" -maxdepth 2 -print | sort
+      echo "Final GRID_URL=${GRID_URL}"
 
-      - name: Upload Allure report as artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: ${{ env.ALLURE_REPORT_DIR }}
+      # -----------------------
+      # 3. Optional: clean proxy env (same as before)
+      # -----------------------
+      echo "Proxy env BEFORE cleanup:"
+      env | grep -i 'proxy' || echo "  (none)"
+      unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy NO_PROXY no_proxy
+      echo "Proxy env AFTER cleanup:"
+      env | grep -i 'proxy' || echo "  (none)"
 
-      - name: Deploy Allure report to GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ${{ env.ALLURE_REPORT_DIR }}
-          destination_dir: allure-report
-          keep_files: true
-          force_orphan: false
-          enable_jekyll: false
+      # -----------------------
+      # 4. Build VSTest filter from GROUPS (same as GA)
+      # -----------------------
+      RAW="${GROUPS}"
+      RAW="${RAW// /}"  # remove spaces
+      FILTER=""
+      if [ -n "${RAW}" ]; then
+        IFS=',' read -ra PARTS <<< "${RAW}"
+        for p in "${PARTS[@]}"; do
+          [ -z "$p" ] && continue
+          if [ -z "${FILTER}" ]; then
+            FILTER="TestCategory=${p}"
+          else
+            FILTER="${FILTER}|TestCategory=${p}"
+          fi
+        done
+      fi
 
-      - name: Post report links
-        if: always()
-        run: |
-          RUN_ID="${{ github.run_id }}"
-          OWNER="${GITHUB_REPOSITORY%%/*}"
-          REPO="${GITHUB_REPOSITORY##*/}"
-          BASE_URL="https://${OWNER}.github.io/${REPO}"
+      echo "Computed filter: ${FILTER:-<none>}"
 
-          {
-            echo "### Allure Report"
-            echo ""
-            echo "- 🔗 **This run (instant):** ${BASE_URL}/allure-report/${RUN_ID}/"
-            echo "- 🔁 **Latest (may take a few minutes):** ${BASE_URL}/allure-report/latest/"
-          } >> "$GITHUB_STEP_SUMMARY"
+      # -----------------------
+      # 5. Restore, build, test
+      # -----------------------
+      dotnet restore
+      dotnet build --configuration Release --no-restore
+
+      dotnet test src/Nimbus.Testing/Nimbus.Testing.csproj \
+        --configuration Release \
+        --no-build \
+        --logger "trx;LogFileName=test_results.trx" \
+        ${FILTER:+--filter "${FILTER}"} \
+        --results-directory target/test-results \
+        -- \
+        "NUnit.NumberOfTestWorkers=${THREADS}" \
+        "TestRunParameters.Parameter(name=\"testSuiteName\", value=\"${SUITE_NAME}\")" \
+        "TestRunParameters.Parameter(name=\"browser\", value=\"${BROWSER}\")" \
+        "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
+        "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
+        "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
+        "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
+        "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"/selenoid-downloads\")"
+
+  artifacts:
+    when: always
+    name: "allure-results-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - target/test-results
+      - ${ALLURE_RESULTS_DIR}
+    expire_in: 1 week
+
+report:
+  stage: report
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update && apt-get install -y curl unzip sudo wget openjdk-11-jre
+    - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
+    - |
+      LATEST_VERSION=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+      echo "Latest Allure version: $LATEST_VERSION"
+      wget "https://github.com/allure-framework/allure2/releases/download/$LATEST_VERSION/allure-$LATEST_VERSION.zip" -O allure.zip
+      unzip allure.zip -d allure-cli
+      sudo mv "allure-cli/allure-$LATEST_VERSION" /opt/allure
+      sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+      allure --version
+  script:
+    - |
+      RESULTS="${ALLURE_RESULTS_DIR}"
+      REPORT_ROOT="${ALLURE_REPORT_DIR}"
+      VERSIONED_DIR="${REPORT_ROOT}/${CI_PIPELINE_ID}"
+      LATEST_DIR="${REPORT_ROOT}/latest"
+
+      allure generate "${RESULTS}" -o "${VERSIONED_DIR}" --clean
+
+      rm -rf "${LATEST_DIR}"
+      mkdir -p "${REPORT_ROOT}"
+      cp -r "${VERSIONED_DIR}" "${LATEST_DIR}"
+
+      if [ -f "${LATEST_DIR}/index.html" ]; then
+        sed -i "s#app.js#app.js?v=${CI_PIPELINE_ID}#g" "${LATEST_DIR}/index.html"
+        sed -i "s#styles.css#styles.css?v=${CI_PIPELINE_ID}#g" "${LATEST_DIR}/index.html"
+        sed -i "1i <meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\"/>" "${LATEST_DIR}/index.html"
+      fi
+
+      cat > "${REPORT_ROOT}/index.html" <<HTML
+      <!doctype html><meta charset="utf-8">
+      <meta http-equiv="refresh" content="0; url=./latest/?t=${CI_PIPELINE_ID}">
+      <title>Allure Report</title>
+      <a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
+      HTML
+
+      touch "${REPORT_ROOT}/.nojekyll"
+
+      echo "Publish dir contents (2 levels):"
+      find "${REPORT_ROOT}" -maxdepth 2 -print | sort
+
+  artifacts:
+    when: always
+    name: "allure-report-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - ${ALLURE_REPORT_DIR}
+    expire_in: 2 weeks
+
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - cp -r ${ALLURE_REPORT_DIR}/* public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

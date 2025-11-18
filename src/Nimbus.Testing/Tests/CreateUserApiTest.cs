@@ -1,6 +1,6 @@
 using Allure.NUnit.Attributes;
 using Nimbus.Framework.Api;
-using Nimbus.Testing.Base;
+using Nimbus.Framework.Base;
 using NUnit.Framework;
 
 namespace Nimbus.Testing.Tests

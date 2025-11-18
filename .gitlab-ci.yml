@@ -25,6 +25,21 @@ test:
     - name: selenium/node-edge:4.18.0
       alias: edge
   script:
+    - echo "Waiting for Selenium Grid to be ready..."
+    - |
+      for i in {1..30}; do
+        STATUS=$(curl -s http://selenium-hub:4444/status | grep -o '"ready":[^,}]*')
+        echo "Selenium Grid status: $STATUS"
+        if [[ "$STATUS" == '"ready":true' ]]; then
+          echo "Selenium Grid is ready!"
+          break
+        fi
+        sleep 2
+        if [[ $i -eq 30 ]]; then
+          echo "Selenium Grid did not become ready in time."
+          exit 1
+        fi
+      done
     - rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
     - mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
     - |

@@ -17,6 +17,7 @@ variables:
 test:
   stage: test
   image: mcr.microsoft.com/dotnet/sdk:9.0
+
   services:
     - name: selenium/standalone-chrome:4.18.0
       alias: chrome
@@ -24,10 +25,10 @@ test:
       alias: edge
 
   script:
-    - echo "BROWSER is: ${BROWSER}"
-
-    # Decide which standalone container URL to use based on BROWSER
     - |
+      echo "BROWSER is: ${BROWSER}"
+
+      # Decide which standalone container URL to use based on BROWSER
       if [ "${BROWSER}" = "chrome" ]; then
         GRID_URL="http://chrome:4444/wd/hub"
       elif [ "${BROWSER}" = "edge" ]; then
@@ -41,8 +42,9 @@ test:
 
       echo "Waiting for ${BROWSER} container to be ready..."
       for i in {1..60}; do
-        STATUS_RAW=$(curl -s "${GRID_URL%/wd/hub}/status" || true)
-        echo "Raw status: ${STATUS_RAW}"
+        STATUS_URL="${GRID_URL%/wd/hub}/status"
+        STATUS_RAW=$(curl -s "${STATUS_URL}" || true)
+        echo "Raw status from ${STATUS_URL}: ${STATUS_RAW}"
         READY=$(echo "${STATUS_RAW}" | grep -o '"ready":[^,}]*' || true)
         echo "Parsed ready flag: ${READY:-<none>}"
 
@@ -57,9 +59,12 @@ test:
           exit 1
         fi
       done
-    - rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
-    - mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
-    - |
+
+      # Clean / prepare Allure directories
+      rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
+      mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
+
+      # Build the NUnit filter from GROUPS
       RAW="${GROUPS}"
       RAW="${RAW// /}"
       FILTER=""
@@ -93,6 +98,7 @@ test:
         "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
         "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
         "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")"
+
   artifacts:
     when: always
     name: "allure-results-${CI_COMMIT_SHORT_SHA}"

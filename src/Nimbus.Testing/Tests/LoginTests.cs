@@ -17,8 +17,6 @@ namespace Nimbus.Testing.Tests
     /// - Parallel test support
     /// </summary>
     [TestFixture]
-    [AllureSuite("Smoke")]
-    [Category("Smoke")]
     public class LoginTest : TestBase
     {
         /// <summary>
@@ -35,6 +33,7 @@ namespace Nimbus.Testing.Tests
         /// </summary>
         [Test]
         [Category("regression")]
+        [Category("Smoke")]
         [Category("login")]
         [AllureTag("login")]
         [AllureSeverity(SeverityLevel.critical)]
@@ -68,6 +67,7 @@ namespace Nimbus.Testing.Tests
         /// Parallel test case for concurrency validation.
         /// </summary>
         [Test]
+        [Category("Smoke")]
         [Category("login")]
         public void ParallelTest()
         {

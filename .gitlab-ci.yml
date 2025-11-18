@@ -61,6 +61,18 @@ test:
         fi
       done
 
+      echo "Testing raw session creation against ${GRID_URL}..."
+
+      curl -s -X POST "${GRID_URL}/session" \
+        -H 'Content-Type: application/json' \
+        -d '{
+          "capabilities": {
+            "alwaysMatch": {
+              "browserName": "'"${BROWSER}"'"
+            }
+          }
+        }' || echo "Session curl failed"
+
       # Clean / prepare Allure directories
       rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
       mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"

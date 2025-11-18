@@ -35,7 +35,6 @@ namespace Nimbus.Testing.Tests
         /// Full end-to-end test that downloads the PDF and validates its contents.
         /// </summary>
         [Test]
-        [Category("Smoke")]
         [Description("Verify downloaded PDF from file-examples.com contains expected text")]
         public void VerifyDownloadedPdfFromFileExamples()
         {

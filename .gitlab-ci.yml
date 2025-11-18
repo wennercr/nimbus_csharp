@@ -78,7 +78,17 @@ test:
 
 report:
   stage: report
-  image: "allurehq/allure:2.29.0"
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update && apt-get install -y curl unzip sudo
+    - |
+      LATEST_VERSION=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+      echo "Latest Allure version: $LATEST_VERSION"
+      wget "https://github.com/allure-framework/allure2/releases/download/$LATEST_VERSION/allure-$LATEST_VERSION.zip" -O allure.zip
+      unzip allure.zip -d allure-cli
+      sudo mv "allure-cli/allure-$LATEST_VERSION" /opt/allure
+      sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+      allure --version
   script:
     - |
       RESULTS="${ALLURE_RESULTS_DIR}"

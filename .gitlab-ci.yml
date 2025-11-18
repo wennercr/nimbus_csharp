@@ -6,10 +6,10 @@ stages:
 
 variables:
   SUITE_NAME: "SampleSmoke"
-  BROWSER: "chrome"     # chrome | firefox | edge
+  BROWSER: "chrome" # chrome | firefox | edge
   HEADLESS: "true"
   GROUPS: "Smoke"
-  THREADS: "5"
+  THREADS: "3"
 
   # We are using Selenoid here by default
   SELENOID: "true"
@@ -82,43 +82,43 @@ test:
         echo "Starting Selenoid via docker:dind..."
 
         DOWNLOADS_DIR="/selenoid-downloads"
-        # This directory is inside the dind container filesystem. Your tests can
-        # still download files; wiring them back to the job container is a next step.
-        # For now, just ensure it exists when Selenoid starts.
-        cat > browsers.json <<EOF
-        {
-          "chrome": {
-            "default": "latest",
-            "versions": {
-              "latest": {
-                "image": "selenoid/chrome:latest",
-                "port": "4444",
-                "path": "/"
-              }
+
+        # IMPORTANT: EOF must be at column 0 (from Bash's perspective), so we
+        # write the here-doc with no extra indentation on the JSON or EOF.
+        cat > browsers.json <<'EOF'
+      {
+        "chrome": {
+          "default": "latest",
+          "versions": {
+            "latest": {
+              "image": "selenoid/chrome:latest",
+              "port": "4444",
+              "path": "/"
             }
-          },
-          "firefox": {
-            "default": "latest",
-            "versions": {
-              "latest": {
-                "image": "selenoid/firefox:latest",
-                "port": "4444",
-                "path": "/"
-              }
+          }
+        },
+        "firefox": {
+          "default": "latest",
+          "versions": {
+            "latest": {
+              "image": "selenoid/firefox:latest",
+              "port": "4444",
+              "path": "/"
             }
-          },
-          "edge": {
-            "default": "latest",
-            "versions": {
-              "latest": {
-                "image": "selenoid/edge:latest",
-                "port": "4444",
-                "path": "/"
-              }
+          }
+        },
+        "edge": {
+          "default": "latest",
+          "versions": {
+            "latest": {
+              "image": "selenoid/edge:latest",
+              "port": "4444",
+              "path": "/"
             }
           }
         }
-        EOF
+      }
+      EOF
 
         case "${BROWSER}" in
           chrome)  docker pull selenoid/chrome:latest  ;;
@@ -197,8 +197,7 @@ test:
       echo "Computed filter: ${FILTER:-<none>}"
 
       # -----------------------
-      # 5. (Re)restore, build, test
-      #    (Build already ran in 'build' job, but this keeps test job self-contained)
+      # 5. Restore, build, test
       # -----------------------
       dotnet restore
       dotnet build --configuration Release --no-restore

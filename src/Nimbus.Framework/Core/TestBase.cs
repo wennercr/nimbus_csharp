@@ -7,7 +7,7 @@ using Nimbus.Framework.Utils;          // ConfigLoader
 using Nimbus.Framework.Utils.Logger;
 using Allure.NUnit;   // AllureHelper
 
-namespace Nimbus.Testing.Base
+namespace Nimbus.Framework.Base
 {
     /// <summary>
     /// Abstract base class for all UI tests in the Nimbus framework (NUnit).

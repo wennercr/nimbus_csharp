@@ -1,7 +1,7 @@
 using Nimbus.Testing.Pages;
 using NUnit.Framework;
 using Allure.Net.Commons;
-using Nimbus.Testing.Base;
+using Nimbus.Framework.Base;
 using Nimbus.Framework.Utils;
 using Allure.NUnit.Attributes;
 

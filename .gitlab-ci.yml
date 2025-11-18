@@ -8,7 +8,7 @@ variables:
   BROWSER: "chrome"
   HEADLESS: "true"
   GROUPS: "Smoke"
-  THREADS: "3"
+  THREADS: "1"
   GRID_URL: "http://selenium-hub:4444/wd/hub"
   SELENOID: "false"
   ALLURE_RESULTS_DIR: "src/Nimbus.Testing/bin/Release/net9.0/allure-results"
@@ -30,9 +30,9 @@ test:
 
       # Decide which standalone container URL to use based on BROWSER
       if [ "${BROWSER}" = "chrome" ]; then
-        GRID_URL="http://chrome:4444/wd/hub"
+        GRID_URL="http://chrome:4444"
       elif [ "${BROWSER}" = "edge" ]; then
-        GRID_URL="http://edge:4444/wd/hub"
+        GRID_URL="http://edge:4444"
       else
         echo "Unsupported BROWSER value: '${BROWSER}'. Use 'chrome' or 'edge'."
         exit 1
@@ -42,7 +42,7 @@ test:
 
       echo "Waiting for ${BROWSER} container to be ready..."
       for i in {1..30}; do
-        STATUS_URL="${GRID_URL%/wd/hub}/status"
+        STATUS_URL="${GRID_URL}/status"
         STATUS_RAW=$(curl -s "${STATUS_URL}" || true)
         echo "Raw status from ${STATUS_URL}: ${STATUS_RAW}"
 
@@ -52,7 +52,7 @@ test:
           break
         fi
 
-        echo "Selenium ${BROWSER} standalone not ready yet (attempt ${i}/60)."
+        echo "Selenium ${BROWSER} standalone not ready yet (attempt ${i}/30)."
         sleep 2
 
         if [ "$i" -eq 30 ]; then

@@ -80,7 +80,9 @@ report:
   stage: report
   image: ubuntu:22.04
   before_script:
-    - apt-get update && apt-get install -y curl unzip sudo wget
+    - apt-get update && apt-get install -y curl unzip sudo wget openjdk-11-jre
+    - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
     - |
       LATEST_VERSION=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
       echo "Latest Allure version: $LATEST_VERSION"

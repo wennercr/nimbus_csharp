@@ -1,196 +1,126 @@
 stages:
-  - build
   - test
   - report
 
-# Global defaults for all jobs
-default:
-  image: "registry.mycorp.local/dotnet/sdk:8.0"   # <-- change to your internal .NET SDK image
-  tags:
-    - shared                                      # <-- adjust to your GitLab runner tag(s)
-  variables:
-    DOTNET_CLI_TELEMETRY_OPTOUT: "1"
-    DOTNET_NOLOGO: "true"
+variables:
+  SUITE_NAME: "SampleSmoke"
+  BROWSER: "chrome"
+  HEADLESS: "true"
+  GROUPS: "smoke"
+  THREADS: "3"
+  GRID_URL: "http://selenium-hub:4444/wd/hub"
+  SELENOID: "false"
+  ALLURE_RESULTS_DIR: "src/Nimbus.Testing/bin/Release/net9.0/allure-results"
+  ALLURE_REPORT_DIR: "target/allure-report"
 
-    # Browser / Selenium config used by your DriverFactory
-    BROWSER: "chrome"
-    HEADLESS: "true"
-
-    # Primary: Selenoid endpoint (remote WebDriver URL)
-    REMOTE_WEB_DRIVER_URL: "http://selenoid:4444/wd/hub"
-
-    # If your framework uses a flag to decide local vs remote
-    RUN_REMOTE: "true"
-
-    # --- Optional: Selenium Grid fallback example ----------------
-    # If you ever need Selenium Grid instead of Selenoid, you can:
-    # 1. Override this at the job level OR
-    # 2. Change it here globally.
-    #
-    # REMOTE_WEB_DRIVER_URL: "http://selenium-hub:4444/wd/hub"
-    # ------------------------------------------------------------
-
-    # Nexus NuGet feed (set actual values as CI/CD variables in GitLab)
-    # Example variables you define in GitLab → Settings → CI/CD → Variables:
-    #   NUGET_FEED_URL:      https://nexus.mycorp.local/repository/nuget-group
-    #   NUGET_USERNAME:      gitlab-ci-bot
-    #   NUGET_PASSWORD:      ********
-    #
-    # They are referenced in before_script via $NUGET_*
-  cache:
-    key: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}"
-    paths:
-      - .nuget/packages
-      - **/obj/
-
-before_script:
-  # Show dotnet version for sanity debugging
-  - dotnet --version
-
-  # Configure Nexus as a NuGet source
-  # This assumes the following protected variables exist in GitLab CI:
-  #   NUGET_FEED_URL, NUGET_USERNAME, NUGET_PASSWORD
-  - |
-    if [ -n "$NUGET_FEED_URL" ]; then
-      echo "Configuring Nexus NuGet source..."
-      dotnet nuget remove source "nexus" || true
-      dotnet nuget add source "$NUGET_FEED_URL" \
-        --name "nexus" \
-        --username "$NUGET_USERNAME" \
-        --password "$NUGET_PASSWORD" \
-        --store-password-in-clear-text
-    else
-      echo "WARNING: NUGET_FEED_URL not set. This will only work if your image already has sources configured."
-    fi
-
-  # Restore all projects / the main solution
-  # If you have a main solution file (recommended), target it explicitly:
-  #   dotnet restore Nimbus.CSharp.sln
-  - dotnet restore
-
-# -----------------------
-#  BUILD JOB
-# -----------------------
-build:
-  stage: build
-  script:
-    # Build the whole solution in Release
-    # Change "Nimbus.CSharp.sln" to your actual solution file if needed
-    - dotnet build --configuration Release
-  artifacts:
-    name: "build-${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - ./**/bin/Release/
-    expire_in: 1 week
-
-# -----------------------
-#  TEST JOB
-# -----------------------
 test:
   stage: test
-  needs:
-    - build
-
-  # If Selenoid or Selenium Grid is running outside the runner (typical),
-  # you do not need a GitLab "services" entry here.
-  #
-  # If you ever want to spin Selenoid inside this job using a shell runner
-  # with Docker, you could do something like this:
-  #
-  #  services:
-  #    - name: docker:dind
-  #      command:
-  #        - "--tls=false"
-  #
-  #  variables:
-  #    DOCKER_HOST: tcp://docker:2375
-  #    DOCKER_TLS_CERTDIR: ""
-  #
-  #  before_script:
-  #    - apk add --no-cache docker-cli
-  #    - docker info
-  #    - docker run -d --name selenoid \
-  #        -p 4444:4444 \
-  #        -v /etc/selenoid:/etc/selenoid:ro \
-  #        -v /opt/selenoid/video:/opt/selenoid/video \
-  #        aerokube/selenoid:latest-release
-  #
-  # Then REMOTE_WEB_DRIVER_URL would be http://localhost:4444/wd/hub
-
-  variables:
-    # Override anything test specific here if you want
-    BROWSER: "chrome"
-    HEADLESS: "true"
-    RUN_REMOTE: "true"
-    REMOTE_WEB_DRIVER_URL: "http://selenoid:4444/wd/hub"
-
-    # If your Allure NUnit adapter uses env variables, you can add them here
-    # Example:
-    # ALLURE_CONFIG: "allureConfig.json"
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  # Uncomment below to use Selenoid instead of Selenium Grid
+  # services:
+  #   - name: aerokube/selenoid:latest-release
+  #     alias: selenoid
+  #     entrypoint: [""]
+  #     command: ["-limit", "${THREADS}", "-container-network", "bridge", "-retry-count", "1"]
+  services:
+    - name: selenium/hub:4.18.0-20240423
+      alias: selenium-hub
+    - name: selenium/node-chrome:4.18.0-20240423
+      alias: chrome
+      entrypoint: [""]
+      command: ["--SE_EVENT_BUS_HOST=selenium-hub", "--SE_EVENT_BUS_PUBLISH_PORT=4442", "--SE_EVENT_BUS_SUBSCRIBE_PORT=4443"]
+    - name: selenium/node-edge:4.18.0-20240423
+      alias: edge
+      entrypoint: [""]
+      command: ["--SE_EVENT_BUS_HOST=selenium-hub", "--SE_EVENT_BUS_PUBLISH_PORT=4442", "--SE_EVENT_BUS_SUBSCRIBE_PORT=4443"]
 
   script:
-    # Adjust the path below to your actual test project
-    # For example: src/Nimbus.Testing/Nimbus.Testing.csproj
-    - dotnet test src/Nimbus.Testing/Nimbus.Testing.csproj \
-        --configuration Release \
-        --logger "trx;LogFileName=TestResults.trx" \
-        --results-directory "TestResults" \
-        --collect:"XPlat Code Coverage"
+    - rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
+    - mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
 
-    # If Allure results are being generated by the NUnit adapter,
-    # they will typically be in an "allure-results" folder under the test project.
-    # No extra command needed here; the adapter handles it.
+    # Build VSTest filter like: TestCategory=a|TestCategory=b|TestCategory=c
+    - |
+      RAW="${GROUPS}"
+      RAW="${RAW// /}"
+      FILTER=""
+      if [ -n "${RAW}" ]; then
+        IFS=',' read -ra PARTS <<< "${RAW}"
+        for p in "${PARTS[@]}"; do
+          [ -z "$p" ] && continue
+          if [ -z "${FILTER}" ]; then
+            FILTER="TestCategory=${p}"
+          else
+            FILTER="${FILTER}|TestCategory=${p}"
+          fi
+        done
+      fi
+      echo "Computed filter: ${FILTER:-<none>}" > filter.txt
+
+    - dotnet restore
+    - dotnet build --configuration Release --no-restore
+
+    - |
+      FILTER=$(cat filter.txt)
+      dotnet test \
+        --configuration Release \
+        --no-build \
+        --logger "trx;LogFileName=test_results.trx" \
+        ${FILTER:+--filter "${FILTER}"} \
+        --results-directory target/test-results \
+        -- \
+        "NUnit.NumberOfTestWorkers=${THREADS}" \
+        "TestRunParameters.Parameter(name=\"testSuiteName\", value=\"${SUITE_NAME}\")" \
+        "TestRunParameters.Parameter(name=\"browser\", value=\"${BROWSER}\")" \
+        "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
+        "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
+        "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
+        "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")"
 
   artifacts:
     when: always
-    name: "tests-${CI_COMMIT_SHORT_SHA}"
+    name: "allure-results-${CI_COMMIT_SHORT_SHA}"
     paths:
-      - TestResults
-      - ./**/bin/Release/
-      - ./**/allure-results/
+      - target/test-results
+      - ${ALLURE_RESULTS_DIR}
     expire_in: 1 week
 
-# -----------------------
-#  OPTIONAL: ALLURE REPORT
-# -----------------------
-# This job is optional. It assumes you have an internal Allure CLI image available.
-# If your private enclave has an Allure image mirrored, set it here.
-allure-report:
+report:
   stage: report
-  needs:
-    - test
-  image: "registry.mycorp.local/allure/cli:2.29.0"   # <-- change to your internal Allure CLI image
+  image: "ghcr.io/allure-framework/allure-cli:2.29.0"
   script:
-    # Find the first allure-results directory (adjust if you have multiple)
     - |
-      RESULTS_DIR=$(find . -type d -name "allure-results" | head -n 1 || true)
-      if [ -z "$RESULTS_DIR" ]; then
-        echo "No allure-results directory found. Skipping report generation."
-        exit 0
-      fi
-      echo "Using allure-results from: $RESULTS_DIR"
+      RESULTS="${ALLURE_RESULTS_DIR}"
+      REPORT_ROOT="${ALLURE_REPORT_DIR}"
+      VERSIONED_DIR="${REPORT_ROOT}/${CI_PIPELINE_ID}"
+      LATEST_DIR="${REPORT_ROOT}/latest"
 
-      mkdir -p AllureReport
-      allure generate "$RESULTS_DIR" --clean -o AllureReport
+      allure generate "${RESULTS}" -o "${VERSIONED_DIR}" --clean
+
+      rm -rf "${LATEST_DIR}"
+      mkdir -p "${REPORT_ROOT}"
+      cp -r "${VERSIONED_DIR}" "${LATEST_DIR}"
+
+      if [ -f "${LATEST_DIR}/index.html" ]; then
+        sed -i "s#app.js#app.js?v=${CI_PIPELINE_ID}#g" "${LATEST_DIR}/index.html"
+        sed -i "s#styles.css#styles.css?v=${CI_PIPELINE_ID}#g" "${LATEST_DIR}/index.html"
+        sed -i "1i <meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\"/>" "${LATEST_DIR}/index.html"
+      fi
+
+      cat > "${REPORT_ROOT}/index.html" <<HTML
+      <!doctype html><meta charset="utf-8">
+      <meta http-equiv="refresh" content="0; url=./latest/?t=${CI_PIPELINE_ID}">
+      <title>Allure Report</title>
+      <a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
+      HTML
+
+      touch "${REPORT_ROOT}/.nojekyll"
+
+      echo "Publish dir contents (2 levels):"
+      find "${REPORT_ROOT}" -maxdepth 2 -print | sort
 
   artifacts:
     when: always
     name: "allure-report-${CI_COMMIT_SHORT_SHA}"
     paths:
-      - AllureReport
+      - ${ALLURE_REPORT_DIR}
     expire_in: 2 weeks
-
-  # Uncomment this if you want to serve Allure as a GitLab Pages site.
-  # Only one job can use 'artifacts:public' for Pages, so you might split that out.
-  #
-  # publish:
-  #   stage: report
-  #   needs:
-  #     - allure-report
-  #   script:
-  #     - mv AllureReport public
-  #   artifacts:
-  #     paths:
-  #       - public
-  #   only:
-  #     - main

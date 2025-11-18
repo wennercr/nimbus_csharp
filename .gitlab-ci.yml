@@ -27,12 +27,8 @@ test:
       alias: selenium-hub
     - name: selenium/node-chrome:4.18.0
       alias: chrome
-      entrypoint: [""]
-      command: ["--SE_EVENT_BUS_HOST=selenium-hub", "--SE_EVENT_BUS_PUBLISH_PORT=4442", "--SE_EVENT_BUS_SUBSCRIBE_PORT=4443"]
     - name: selenium/node-edge:4.18.0
       alias: edge
-      entrypoint: [""]
-      command: ["--SE_EVENT_BUS_HOST=selenium-hub", "--SE_EVENT_BUS_PUBLISH_PORT=4442", "--SE_EVENT_BUS_SUBSCRIBE_PORT=4443"]
 
   script:
     - rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"

@@ -1,6 +1,7 @@
 stages:
   - test
   - report
+  - deploy
 
 variables:
   SUITE_NAME: "SampleSmoke"
@@ -16,12 +17,6 @@ variables:
 test:
   stage: test
   image: mcr.microsoft.com/dotnet/sdk:9.0
-  # Uncomment below to use Selenoid instead of Selenium Grid
-  # services:
-  #   - name: aerokube/selenoid:latest-release
-  #     alias: selenoid
-  #     entrypoint: [""]
-  #     command: ["-limit", "${THREADS}", "-container-network", "bridge", "-retry-count", "1"]
   services:
     - name: selenium/hub:4.18.0
       alias: selenium-hub
@@ -29,12 +24,9 @@ test:
       alias: chrome
     - name: selenium/node-edge:4.18.0
       alias: edge
-
   script:
     - rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
     - mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
-
-        # Build VSTest filter like: TestCategory=a|TestCategory=b|TestCategory=c
     - |
       RAW="${GROUPS}"
       RAW="${RAW// /}"
@@ -50,10 +42,10 @@ test:
           fi
         done
       fi
-
       echo "Computed filter: ${FILTER:-<none>}"
-
-      dotnet test \
+    - dotnet restore
+    - dotnet build --configuration Release --no-restore
+    - dotnet test \
         --configuration Release \
         --no-build \
         --logger "trx;LogFileName=test_results.trx" \
@@ -67,7 +59,6 @@ test:
         "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
         "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
         "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")"
-
   artifacts:
     when: always
     name: "allure-results-${CI_COMMIT_SHORT_SHA}"
@@ -122,18 +113,20 @@ report:
       echo "Publish dir contents (2 levels):"
       find "${REPORT_ROOT}" -maxdepth 2 -print | sort
 
-  pages:
-    stage: deploy
-    script:
-      - mkdir -p public
-      - cp -r ${ALLURE_REPORT_DIR}/* public/
-    artifacts:
-      paths:
-        - public
-
   artifacts:
     when: always
     name: "allure-report-${CI_COMMIT_SHORT_SHA}"
     paths:
       - ${ALLURE_REPORT_DIR}
     expire_in: 2 weeks
+
+pages:
+  stage: deploy
+  script:
+    - mkdir -p public
+    - cp -r ${ALLURE_REPORT_DIR}/* public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main

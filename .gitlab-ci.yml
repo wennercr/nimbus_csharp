@@ -45,7 +45,7 @@ test:
       echo "Computed filter: ${FILTER:-<none>}"
     - dotnet restore
     - dotnet build --configuration Release --no-restore
-    - dotnet test \
+    - dotnet test src/Nimbus.Testing/Nimbus.Testing.csproj \
         --configuration Release \
         --no-build \
         --logger "trx;LogFileName=test_results.trx" \

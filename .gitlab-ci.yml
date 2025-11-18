@@ -22,18 +22,15 @@ test:
 
   image: mcr.microsoft.com/dotnet/sdk:9.0
 
-  # Docker-in-Docker service to start Selenoid (similar to GA)
   services:
     - name: docker:27.0-dind
       alias: docker
 
   variables:
-    # Tell docker CLI to talk to the dind service
     DOCKER_HOST: "tcp://docker:2375"
     DOCKER_TLS_CERTDIR: ""
 
   before_script:
-    # Install docker client + helpers in the dotnet image
     - apt-get update
     - apt-get install -y docker.io curl unzip jq
     - docker version
@@ -61,43 +58,44 @@ test:
         echo "Starting Selenoid via docker:dind..."
 
         DOWNLOADS_DIR="/selenoid-downloads"
-        # This directory is inside the dind container filesystem. Your tests can
-        # still download files; wiring them back to the job container is a next step.
-        # For now, just ensure it exists when Selenoid starts.
-        cat > browsers.json <<EOF
-        {
-          "chrome": {
-            "default": "latest",
-            "versions": {
-              "latest": {
-                "image": "selenoid/chrome:latest",
-                "port": "4444",
-                "path": "/"
-              }
-            }
-          },
-          "firefox": {
-            "default": "latest",
-            "versions": {
-              "latest": {
-                "image": "selenoid/firefox:latest",
-                "port": "4444",
-                "path": "/"
-              }
-            }
-          },
-          "edge": {
-            "default": "latest",
-            "versions": {
-              "latest": {
-                "image": "selenoid/edge:latest",
-                "port": "4444",
-                "path": "/"
-              }
-            }
-          }
-        }
-        EOF
+
+        # ------------------------------
+        # FIXED HEREDOC (NO INDENTATION)
+        # ------------------------------
+        cat > browsers.json << 'EOF'
+{
+  "chrome": {
+    "default": "latest",
+    "versions": {
+      "latest": {
+        "image": "selenoid/chrome:latest",
+        "port": "4444",
+        "path": "/"
+      }
+    }
+  },
+  "firefox": {
+    "default": "latest",
+    "versions": {
+      "latest": {
+        "image": "selenoid/firefox:latest",
+        "port": "4444",
+        "path": "/"
+      }
+    }
+  },
+  "edge": {
+    "default": "latest",
+    "versions": {
+      "latest": {
+        "image": "selenoid/edge:latest",
+        "port": "4444",
+        "path": "/"
+      }
+    }
+  }
+}
+EOF
 
         case "${BROWSER}" in
           chrome)  docker pull selenoid/chrome:latest  ;;
@@ -108,16 +106,12 @@ test:
 
         docker rm -f selenoid || true
 
-        # We run Selenoid inside the docker:dind service.
-        # -p 4444:4444 exposes Selenoid on the dind container's 4444,
-        # which is reachable from the job as http://docker:4444/
         docker run -d --name selenoid -p 4444:4444 \
           -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aerokube/selenoid:latest-release \
-          -limit ${THREADS} -container-network bridge -retry-count 1
+          -limit ${THREADS} -retry-count 1
 
-        # Readiness loop – Selenoid is on the 'docker' service, port 4444
         echo "Waiting for Selenoid to be ready at http://docker:4444/status ..."
         for i in {1..60}; do
           if curl -sf "http://docker:4444/status" >/dev/null; then
@@ -126,7 +120,6 @@ test:
           fi
           echo "Selenoid not ready yet (attempt ${i}/60)..."
           sleep 2
-
           if [ "$i" -eq 60 ]; then
             echo "Selenoid did not become ready in time."
             docker logs selenoid || true
@@ -137,17 +130,15 @@ test:
         echo "Selenoid /status:"
         curl -s "http://docker:4444/status" || true
 
-        # Force GRID_URL to Selenoid
         GRID_URL="http://docker:4444/wd/hub"
       else
-        echo "SELENOID=false – this job is configured only for Selenoid mode."
-        echo "You can extend this section later to support selenium/standalone-* services."
+        echo "SELENOID=false – this job currently supports only Selenoid."
       fi
 
       echo "Final GRID_URL=${GRID_URL}"
 
       # -----------------------
-      # 3. Optional: clean proxy env (same as before)
+      # 3. Clean proxy env
       # -----------------------
       echo "Proxy env BEFORE cleanup:"
       env | grep -i 'proxy' || echo "  (none)"
@@ -156,10 +147,10 @@ test:
       env | grep -i 'proxy' || echo "  (none)"
 
       # -----------------------
-      # 4. Build VSTest filter from GROUPS (same as GA)
+      # 4. Build VSTest filter
       # -----------------------
       RAW="${GROUPS}"
-      RAW="${RAW// /}"  # remove spaces
+      RAW="${RAW// /}"
       FILTER=""
       if [ -n "${RAW}" ]; then
         IFS=',' read -ra PARTS <<< "${RAW}"
@@ -172,7 +163,6 @@ test:
           fi
         done
       fi
-
       echo "Computed filter: ${FILTER:-<none>}"
 
       # -----------------------
@@ -220,6 +210,7 @@ report:
       sudo mv "allure-cli/allure-$LATEST_VERSION" /opt/allure
       sudo ln -s /opt/allure/bin/allure /usr/bin/allure
       allure --version
+
   script:
     - |
       RESULTS="${ALLURE_RESULTS_DIR}"
@@ -240,11 +231,11 @@ report:
       fi
 
       cat > "${REPORT_ROOT}/index.html" <<HTML
-      <!doctype html><meta charset="utf-8">
-      <meta http-equiv="refresh" content="0; url=./latest/?t=${CI_PIPELINE_ID}">
-      <title>Allure Report</title>
-      <a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
-      HTML
+<!doctype html><meta charset="utf-8">
+<meta http-equiv="refresh" content="0; url=./latest/?t=${CI_PIPELINE_ID}">
+<title>Allure Report</title>
+<a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
+HTML
 
       touch "${REPORT_ROOT}/.nojekyll"
 

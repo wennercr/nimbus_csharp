@@ -7,7 +7,7 @@ variables:
   SUITE_NAME: "SampleSmoke"
   BROWSER: "chrome"
   HEADLESS: "true"
-  GROUPS: "smoke"
+  GROUPS: "Smoke"
   THREADS: "3"
   GRID_URL: "http://selenium-hub:4444/wd/hub"
   SELENOID: "false"

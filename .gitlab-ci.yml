@@ -5,81 +5,161 @@ stages:
 
 variables:
   SUITE_NAME: "SampleSmoke"
-  BROWSER: "chrome"
+  BROWSER: "chrome"     # chrome | firefox | edge
   HEADLESS: "true"
   GROUPS: "Smoke"
-  THREADS: "1"
-  GRID_URL: "http://selenium-hub:4444/wd/hub"
-  SELENOID: "false"
+  THREADS: "3"
+
+  # We are using Selenoid here by default
+  SELENOID: "true"
+  GRID_URL: "http://docker:4444/wd/hub"
+
   ALLURE_RESULTS_DIR: "src/Nimbus.Testing/bin/Release/net9.0/allure-results"
   ALLURE_REPORT_DIR: "target/allure-report"
 
 test:
   stage: test
+
   image: mcr.microsoft.com/dotnet/sdk:9.0
 
+  # Docker-in-Docker service to start Selenoid (similar to GA)
   services:
-    - name: selenium/standalone-chrome:4.18.0
-      alias: chrome
-    - name: selenium/standalone-edge:4.18.0
-      alias: edge
+    - name: docker:27.0-dind
+      alias: docker
+
+  variables:
+    # Tell docker CLI to talk to the dind service
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
+
+  before_script:
+    # Install docker client + helpers in the dotnet image
+    - apt-get update
+    - apt-get install -y docker.io curl unzip jq
+    - docker version
 
   script:
     - |
-      echo "BROWSER is: ${BROWSER}"
+      echo "SUITE_NAME=${SUITE_NAME}"
+      echo "BROWSER=${BROWSER}"
+      echo "HEADLESS=${HEADLESS}"
+      echo "GROUPS=${GROUPS}"
+      echo "THREADS=${THREADS}"
+      echo "SELENOID=${SELENOID}"
+      echo "Initial GRID_URL=${GRID_URL}"
 
-      # Decide which standalone container URL to use based on BROWSER
-      if [ "${BROWSER}" = "chrome" ]; then
-        GRID_URL="http://chrome:4444"
-      elif [ "${BROWSER}" = "edge" ]; then
-        GRID_URL="http://edge:4444"
-      else
-        echo "Unsupported BROWSER value: '${BROWSER}'. Use 'chrome' or 'edge'."
-        exit 1
-      fi
-
-      echo "Using GRID_URL=${GRID_URL}"
-
-      echo "Waiting for ${BROWSER} container to be ready..."
-      for i in {1..30}; do
-        STATUS_URL="${GRID_URL}/status"
-        STATUS_RAW=$(curl -s "${STATUS_URL}" || true)
-        echo "Raw status from ${STATUS_URL}: ${STATUS_RAW}"
-
-        # Check for "ready": true with optional spaces
-        if echo "${STATUS_RAW}" | grep -q '"ready"[[:space:]]*:[[:space:]]*true'; then
-          echo "Selenium ${BROWSER} standalone is ready."
-          break
-        fi
-
-        echo "Selenium ${BROWSER} standalone not ready yet (attempt ${i}/30)."
-        sleep 2
-
-        if [ "$i" -eq 30 ]; then
-          echo "Selenium ${BROWSER} standalone did not become ready in time."
-          exit 1
-        fi
-      done
-
-      echo "Testing raw session creation against ${GRID_URL}..."
-
-      curl -s -X POST "${GRID_URL}/session" \
-        -H 'Content-Type: application/json' \
-        -d '{
-          "capabilities": {
-            "alwaysMatch": {
-              "browserName": "'"${BROWSER}"'"
-            }
-          }
-        }' || echo "Session curl failed"
-
-      # Clean / prepare Allure directories
+      # -----------------------
+      # 1. Prepare Allure dirs
+      # -----------------------
       rm -rf "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
       mkdir -p "${ALLURE_RESULTS_DIR}" "${ALLURE_REPORT_DIR}"
 
-      # Build the NUnit filter from GROUPS
+      # -----------------------
+      # 2. Start Selenoid
+      # -----------------------
+      if [ "${SELENOID}" = "true" ]; then
+        echo "Starting Selenoid via docker:dind..."
+
+        DOWNLOADS_DIR="/selenoid-downloads"
+        # This directory is inside the dind container filesystem. Your tests can
+        # still download files; wiring them back to the job container is a next step.
+        # For now, just ensure it exists when Selenoid starts.
+        cat > browsers.json <<EOF
+        {
+          "chrome": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/chrome:latest",
+                "port": "4444",
+                "path": "/"
+              }
+            }
+          },
+          "firefox": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/firefox:latest",
+                "port": "4444",
+                "path": "/"
+              }
+            }
+          },
+          "edge": {
+            "default": "latest",
+            "versions": {
+              "latest": {
+                "image": "selenoid/edge:latest",
+                "port": "4444",
+                "path": "/"
+              }
+            }
+          }
+        }
+        EOF
+
+        case "${BROWSER}" in
+          chrome)  docker pull selenoid/chrome:latest  ;;
+          firefox) docker pull selenoid/firefox:latest ;;
+          edge)    docker pull selenoid/edge:latest    ;;
+          *)       docker pull selenoid/chrome:latest  ;;
+        esac
+
+        docker rm -f selenoid || true
+
+        # We run Selenoid inside the docker:dind service.
+        # -p 4444:4444 exposes Selenoid on the dind container's 4444,
+        # which is reachable from the job as http://docker:4444/
+        docker run -d --name selenoid -p 4444:4444 \
+          -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          aerokube/selenoid:latest-release \
+          -limit ${THREADS} -container-network bridge -retry-count 1
+
+        # Readiness loop – Selenoid is on the 'docker' service, port 4444
+        echo "Waiting for Selenoid to be ready at http://docker:4444/status ..."
+        for i in {1..60}; do
+          if curl -sf "http://docker:4444/status" >/dev/null; then
+            echo "Selenoid is ready."
+            break
+          fi
+          echo "Selenoid not ready yet (attempt ${i}/60)..."
+          sleep 2
+
+          if [ "$i" -eq 60 ]; then
+            echo "Selenoid did not become ready in time."
+            docker logs selenoid || true
+            exit 1
+          fi
+        done
+
+        echo "Selenoid /status:"
+        curl -s "http://docker:4444/status" || true
+
+        # Force GRID_URL to Selenoid
+        GRID_URL="http://docker:4444/wd/hub"
+      else
+        echo "SELENOID=false – this job is configured only for Selenoid mode."
+        echo "You can extend this section later to support selenium/standalone-* services."
+      fi
+
+      echo "Final GRID_URL=${GRID_URL}"
+
+      # -----------------------
+      # 3. Optional: clean proxy env (same as before)
+      # -----------------------
+      echo "Proxy env BEFORE cleanup:"
+      env | grep -i 'proxy' || echo "  (none)"
+      unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy NO_PROXY no_proxy
+      echo "Proxy env AFTER cleanup:"
+      env | grep -i 'proxy' || echo "  (none)"
+
+      # -----------------------
+      # 4. Build VSTest filter from GROUPS (same as GA)
+      # -----------------------
       RAW="${GROUPS}"
-      RAW="${RAW// /}"
+      RAW="${RAW// /}"  # remove spaces
       FILTER=""
       if [ -n "${RAW}" ]; then
         IFS=',' read -ra PARTS <<< "${RAW}"
@@ -92,8 +172,12 @@ test:
           fi
         done
       fi
+
       echo "Computed filter: ${FILTER:-<none>}"
 
+      # -----------------------
+      # 5. Restore, build, test
+      # -----------------------
       dotnet restore
       dotnet build --configuration Release --no-restore
 
@@ -110,7 +194,8 @@ test:
         "TestRunParameters.Parameter(name=\"headless\", value=\"${HEADLESS}\")" \
         "TestRunParameters.Parameter(name=\"remote\", value=\"true\")" \
         "TestRunParameters.Parameter(name=\"gridUrl\", value=\"${GRID_URL}\")" \
-        "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")"
+        "TestRunParameters.Parameter(name=\"isSelenoid\", value=\"${SELENOID}\")" \
+        "TestRunParameters.Parameter(name=\"selenoidDownloadHostDir\", value=\"/selenoid-downloads\")"
 
   artifacts:
     when: always

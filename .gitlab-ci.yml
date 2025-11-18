@@ -15,7 +15,7 @@ variables:
 
 test:
   stage: test
-  image: mcr.microsoft.com/dotnet/sdk:8.0
+  image: mcr.microsoft.com/dotnet/sdk:9.0
   # Uncomment below to use Selenoid instead of Selenium Grid
   # services:
   #   - name: aerokube/selenoid:latest-release

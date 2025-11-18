@@ -17,6 +17,7 @@ namespace Nimbus.Testing.Tests
     /// - Parallel test support
     /// </summary>
     [TestFixture]
+    [Category("Smoke")]
     public class LoginTest : TestBase
     {
         /// <summary>

@@ -8,7 +8,7 @@ variables:
   BROWSER: "chrome"     # chrome | firefox | edge
   HEADLESS: "true"
   GROUPS: "Smoke"
-  THREADS: "3"
+  THREADS: "5"
 
   # We are using Selenoid here by default
   SELENOID: "true"

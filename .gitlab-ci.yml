@@ -20,14 +20,28 @@ test:
   services:
     - name: selenium/hub:4.18.0
       alias: selenium-hub
+
     - name: selenium/node-chrome:4.18.0
       alias: chrome
+      variables:
+        SE_EVENT_BUS_HOST: selenium-hub
+        SE_EVENT_BUS_PUBLISH_PORT: "4442"
+        SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
+
     - name: selenium/node-edge:4.18.0
       alias: edge
+      variables:
+        SE_EVENT_BUS_HOST: selenium-hub
+        SE_EVENT_BUS_PUBLISH_PORT: "4442"
+        SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
   script:
     - echo "Waiting for Selenium Grid to be ready..."
     - |
       for i in {1..90}; do
+        echo "---- RAW GRID STATUS ----"
+        curl -s http://selenium-hub:4444/status
+        echo "--------------------------"
+
         STATUS=$(curl -s http://selenium-hub:4444/status | grep -o '"ready":[^,}]*')
         echo "Selenium Grid status: $STATUS"
         if [[ "$STATUS" == '"ready":true' ]]; then
@@ -35,7 +49,7 @@ test:
           break
         fi
         sleep 2
-        if [[ $i -eq 30 ]]; then
+        if [[ $i -eq 90 ]]; then
           echo "Selenium Grid did not become ready in time."
           exit 1
         fi

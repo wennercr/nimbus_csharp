@@ -227,13 +227,12 @@ publish_nuget:
   needs:
     - build
   script:
-    - echo "Packing Nimbus.Framework with CI-based version..."
-    # Restore once for this job
+    - echo "Packing Nimbus.Framework using version from csproj..."
     - dotnet restore
-    # 1) Build Nimbus.Framework so Nimbus.Framework.dll exists
+    # Build so the DLL exists
     - dotnet build src/Nimbus.Framework/Nimbus.Framework.csproj -c Release --no-restore
-    # 2) Pack using the existing build output
-    - dotnet pack src/Nimbus.Framework/Nimbus.Framework.csproj -c Release -o nupkg /p:Version=1.0.$CI_PIPELINE_IID --no-build
+    # Pack WITHOUT overriding Version – will use <Version> from Nimbus.Framework.csproj
+    - dotnet pack src/Nimbus.Framework/Nimbus.Framework.csproj -c Release -o nupkg --no-build
     - echo "Pushing package(s) to GitLab NuGet registry..."
     - dotnet nuget push nupkg/*.nupkg --source "$NUGET_SOURCE_URL" --api-key "$CI_JOB_TOKEN"
   only:
@@ -295,12 +294,12 @@ report:
             echo "Publish dir contents (2 levels):"
             find "${REPORT_ROOT}" -maxdepth 2 -print | sort
 
-      artifacts:
-        when: always
-        name: "allure-report-${CI_COMMIT_SHORT_SHA}"
-        paths:
-          - ${ALLURE_REPORT_DIR}
-        expire_in: 2 weeks
+  artifacts:
+    when: always
+    name: "allure-report-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - ${ALLURE_REPORT_DIR}
+    expire_in: 2 weeks
 
 # --------------------------------
 # 4) PAGES DEPLOY

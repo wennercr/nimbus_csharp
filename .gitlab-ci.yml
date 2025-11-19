@@ -228,8 +228,12 @@ publish_nuget:
     - build
   script:
     - echo "Packing Nimbus.Framework with CI-based version..."
+    # Restore once for this job
     - dotnet restore
-    - dotnet pack src/Nimbus.Framework/Nimbus.Framework.csproj -c Release -o nupkg /p:Version=1.0.$CI_PIPELINE_IID
+    # 1) Build Nimbus.Framework so Nimbus.Framework.dll exists
+    - dotnet build src/Nimbus.Framework/Nimbus.Framework.csproj -c Release --no-restore
+    # 2) Pack using the existing build output
+    - dotnet pack src/Nimbus.Framework/Nimbus.Framework.csproj -c Release -o nupkg /p:Version=1.0.$CI_PIPELINE_IID --no-build
     - echo "Pushing package(s) to GitLab NuGet registry..."
     - dotnet nuget push nupkg/*.nupkg --source "$NUGET_SOURCE_URL" --api-key "$CI_JOB_TOKEN"
   only:

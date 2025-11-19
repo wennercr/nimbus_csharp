@@ -4,6 +4,17 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- Needed to publish as NuGet -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <!-- Package identity -->
+    <PackageId>Nimbus.Framework</PackageId>
+    <Version>1.0.1</Version>
+    <Authors>CWenner</Authors>
+    <Company>Nimbus</Company>
+    <Description>Nimbus Test Automation Framework</Description>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

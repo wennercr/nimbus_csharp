@@ -1,6 +1,7 @@
 stages:
   - build
   - test
+  - publish
   - report
   - deploy
 
@@ -17,6 +18,9 @@ variables:
 
   ALLURE_RESULTS_DIR: "src/Nimbus.Testing/bin/Release/net9.0/allure-results"
   ALLURE_REPORT_DIR: "target/allure-report"
+
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  NUGET_SOURCE_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/nuget" # ✅ NEW
 
 # --------------------------------
 # 1) BUILD JOB (must succeed)
@@ -83,8 +87,6 @@ test:
 
         DOWNLOADS_DIR="/selenoid-downloads"
 
-        # IMPORTANT: EOF must be at column 0 (from Bash's perspective), so we
-        # write the here-doc with no extra indentation on the JSON or EOF.
         cat > browsers.json <<'EOF'
       {
         "chrome": {
@@ -129,16 +131,12 @@ test:
 
         docker rm -f selenoid || true
 
-        # We run Selenoid inside the docker:dind service.
-        # -p 4444:4444 exposes Selenoid on the dind container's 4444,
-        # which is reachable from the job as http://docker:4444/
         docker run -d --name selenoid -p 4444:4444 \
           -v "$PWD/browsers.json:/etc/selenoid/browsers.json:ro" \
           -v /var/run/docker.sock:/var/run/docker.sock \
           aerokube/selenoid:latest-release \
           -limit ${THREADS} -container-network bridge -retry-count 1
 
-        # Readiness loop – Selenoid is on the 'docker' service, port 4444
         echo "Waiting for Selenoid to be ready at http://docker:4444/status ..."
         for i in {1..60}; do
           if curl -sf "http://docker:4444/status" >/dev/null; then
@@ -158,29 +156,21 @@ test:
         echo "Selenoid /status:"
         curl -s "http://docker:4444/status" || true
 
-        # Force GRID_URL to Selenoid
         GRID_URL="http://docker:4444/wd/hub"
       else
         echo "SELENOID=false – this job is configured only for Selenoid mode."
-        echo "You can extend this section later to support selenium/standalone-* services."
       fi
 
       echo "Final GRID_URL=${GRID_URL}"
 
-      # -----------------------
-      # 3. Optional: clean proxy env (same as before)
-      # -----------------------
       echo "Proxy env BEFORE cleanup:"
       env | grep -i 'proxy' || echo "  (none)"
       unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy NO_PROXY no_proxy
       echo "Proxy env AFTER cleanup:"
       env | grep -i 'proxy' || echo "  (none)"
 
-      # -----------------------
-      # 4. Build VSTest filter from GROUPS (same as GA)
-      # -----------------------
       RAW="${GROUPS}"
-      RAW="${RAW// /}"  # remove spaces
+      RAW="${RAW// /}"
       FILTER=""
       if [ -n "${RAW}" ]; then
         IFS=',' read -ra PARTS <<< "${RAW}"
@@ -196,9 +186,6 @@ test:
 
       echo "Computed filter: ${FILTER:-<none>}"
 
-      # -----------------------
-      # 5. Restore, build, test
-      # -----------------------
       dotnet restore
       dotnet build --configuration Release --no-restore
 
@@ -221,7 +208,6 @@ test:
   needs:
     - build
 
-  # Let the pipeline continue even if tests fail
   allow_failure: true
 
   artifacts:
@@ -231,6 +217,28 @@ test:
       - target/test-results
       - ${ALLURE_RESULTS_DIR}
     expire_in: 1 week
+
+# --------------------------------
+# 2.5) PUBLISH NIMBUS AS NUGET
+# --------------------------------
+publish_nuget:
+  stage: publish
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  needs:
+    - build
+  script:
+    - echo "Packing Nimbus.Framework with CI-based version..."
+    - dotnet restore
+    - dotnet pack src/Nimbus.Framework/Nimbus.Framework.csproj \
+      -c Release \
+      -o nupkg \
+      /p:Version=1.0.$CI_PIPELINE_IID
+    - echo "Pushing package(s) to GitLab NuGet registry..."
+    - dotnet nuget push nupkg/*.nupkg \
+      --source "$NUGET_SOURCE_URL" \
+      --api-key "$CI_JOB_TOKEN"
+  only:
+    - main
 
 # --------------------------------
 # 3) REPORT JOB
@@ -283,17 +291,17 @@ report:
       <a href="./latest/?t=${CI_PIPELINE_ID}">Go to latest report</a>
       HTML
 
-      touch "${REPORT_ROOT}/.nojekyll"
+            touch "${REPORT_ROOT}/.nojekyll"
 
-      echo "Publish dir contents (2 levels):"
-      find "${REPORT_ROOT}" -maxdepth 2 -print | sort
+            echo "Publish dir contents (2 levels):"
+            find "${REPORT_ROOT}" -maxdepth 2 -print | sort
 
-  artifacts:
-    when: always
-    name: "allure-report-${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - ${ALLURE_REPORT_DIR}
-    expire_in: 2 weeks
+      artifacts:
+        when: always
+        name: "allure-report-${CI_COMMIT_SHORT_SHA}"
+        paths:
+          - ${ALLURE_REPORT_DIR}
+        expire_in: 2 weeks
 
 # --------------------------------
 # 4) PAGES DEPLOY
